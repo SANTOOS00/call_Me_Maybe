@@ -1,19 +1,19 @@
 MAIN = main.py
 
-VENV = .venv
+VENV = venv
 
 PYTHON3 = python3
 
-PAHT_PYTHON3 = $(VENV)/bin/python3
+PAHT_PYTHON3 = .$(VENV)/bin/python3
 
 env:
-	if [ ! -d "$(VENV)" ]; then $(PYTHON3) -m venv $(VENV); fi
-
-run: env
-	$(VENV)/bin/python3 $(MAIN)
-
-clean:
-	rm -rf $(VENV)
+	if [ ! -d "$(VENV)" ]; then uv $(VENV); fi
 
 install: env
-	$(VENV)/bin/pip	install -r requirements.txt
+	uv pip install -r requirements.txt
+
+run: install
+	.$(VENV)/bin/python3 $(MAIN)
+
+clean:
+	rm -rf $(VENV) __pycache__
