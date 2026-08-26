@@ -10,6 +10,7 @@ PATH_FLAKE8 = $(UV) run flake8
 
 ARGS_DEF = --functions_definition data/input/functions_definition.json --input data/input/function_calling_tests.json --output data/output/function_calls.json
 
+ARG=""
 
 PATH_MYPY = $(UV) run mypy
 
@@ -18,7 +19,7 @@ install:
 	@echo "venv environment has been created"
 
 run: install
-	$(PYTHON) -m $(PROJECT) $(AEGS_DEF)
+	@$(PYTHON) -m $(PROJECT) $(ARGS_DEF)
 
 
 clean:
