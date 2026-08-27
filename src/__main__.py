@@ -1,15 +1,15 @@
-import sys
-from typing import List
+from .parser import Parser
 
 
 class Main:
     @classmethod
     def run(cls) -> None:
-        cls.parser(sys.argv[1:])
+        cls.parser()
 
     @staticmethod
-    def parser(args: List[str]) -> None:
-        print(args)
+    def parser() -> None:
+        parser = Parser()
+        parser.run()
 
     @staticmethod
     def run_module() -> None:
