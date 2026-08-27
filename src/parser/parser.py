@@ -7,10 +7,10 @@ class Parser:
     def __init__(self) -> None:
         self.parser = argparse.ArgumentParser(description="is test")
 
-    def run(self) -> None:
-        print("ss")
+    def run(self) -> argparse.Namespace:
         args = self.__parser_args()
         self.__valdate_paths(args)
+        return args
 
     def __parser_args(self) -> argparse.Namespace:
         self.parser.add_argument(
@@ -38,4 +38,4 @@ class Parser:
         if not args.input.exists():
             raise Call_Error(f"Input file not found: {args.input}")
         if not args.output.exists():
-            raise Call_Error(f"output file not found: {args.input}")
+            raise Call_Error(f"output file not found: {args.output}")

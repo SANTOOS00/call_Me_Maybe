@@ -1,7 +1,9 @@
+from typing import Dict
+
 
 class Call_Error(Exception):
-    def __init__(self, message, context: str) -> None:
+    def __init__(self, message: str, **context: str) -> None:
         super().__init__(self.format_message(message, context))
 
-    def format_message(self, message, context) -> str:
-        return message
+    def format_message(self, message: str, context: Dict[str, str]) -> str:
+        return f"{message} {context}"

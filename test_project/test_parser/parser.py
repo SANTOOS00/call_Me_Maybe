@@ -28,7 +28,7 @@ def run_pipeline(funcs_path: Path, input_path: Path, output_path: Path) -> None:
         "processed_tests": len(input_data) if isinstance(input_data, list) else 1,
         "output": []
     }
-    # ----------------------------------------------------
+    # ----------------------------------    ------------------
 
     # Ensure output directory exists
     output_path.parent.mkdir(parents=True, exist_ok=True)
