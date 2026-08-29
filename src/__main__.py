@@ -5,7 +5,7 @@ from .custom_error import Call_Error
 class Main:
     @classmethod
     def run(cls) -> None:
-        cls.parser() 
+        cls.parser()
 
     @staticmethod
     def parser() -> None:

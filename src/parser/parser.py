@@ -80,24 +80,15 @@ class Parser:
 
     def __valid_data_json(self) -> None:
         if self.__promtes is not None:
-            self.__valid_promtes()
+            self.__valid_path(self.args.input)
         if self.__function_definition is not None:
-            self.__valid_function_definition()
-
-    def __valid_promtes(self) -> None:
-        path = Path("schema.json")
-        self.__valid_path(path)
-        with open(path, 'r') as file:
-            json.load(file)
-
-    def __valid_function_definition(self) -> None:
-        pass
+            self.__valid_path(self.args.functions_definition)
 
     def __valid_path(self, path: Path) -> None:
         if not path.exists():
-            raise Call_Error("sssssssssss")
+            raise Call_Error("[ERROR]: Path does not existe")
         if not os.access(path, os.R_OK):
-            raise Call_Error("sssssssssssssss")
+            raise Call_Error("[ERROR]: File is not readable")
 
     def set_args(self) -> None:
         self.args = ParserArgs().run()
