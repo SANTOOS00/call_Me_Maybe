@@ -1,6 +1,9 @@
 import argparse
 from pathlib import Path
 from src.custom_error import Call_Error
+import json
+import os
+from typing import Dict, List, Any
 
 
 class ParserArgs:
@@ -41,10 +44,46 @@ class ParserArgs:
             raise Call_Error(f"output file not found: {args.output}")
 
 
+class ParserReadData:
+    def get_promtes(self, path: Path) -> List[Dict[Any, Any]]:
+        self.__valid_path(path)
+        with open(path, "r") as fd:
+            promtes = json.load(fd)
+        return promtes
+
+    def get_function_definition(self, path: Path) -> List[Dict[Any, Any]]:
+        self.__valid_path(path)
+        with open(path, "r") as fd:
+            promtes = json.load(fd)
+        return promtes
+
+    def __valid_path(self, path: Path) -> None:
+        if not path.exists():
+            raise Call_Error("sssssssssss")
+        if not os.access(path, os.R_OK):
+            raise Call_Error("sssssssssssssss")
+
+
 class Parser:
     def __init__(self) -> None:
         self.__function_definition = None
         self.__promtes = None
+        self.__parser_data: ParserReadData
+        self.args: argparse.Namespace
 
     def run(self) -> None:
-        args: argparse.Namespace = ParserArgs().run()
+        self.set_args()
+        self.__parser_data = ParserReadData()
+        self.__set_promtes()
+        self.__set_function_def()
+
+    def set_args(self) -> None:
+        self.args = ParserArgs().run()
+
+    def __set_function_def(self) -> None:
+        self.__function_definition = self.\
+            __parser_data.get_function_definition(
+                self.args.functions_definition)
+
+    def __set_promtes(self) -> None:
+        self.__promtes = self.__parser_data.get_promtes(self.args.input)

@@ -1,5 +1,5 @@
 from .parser import Parser
-
+from .custom_error import Call_Error
 
 class Main:
     @classmethod
@@ -19,6 +19,6 @@ class Main:
 if __name__ == "__main__":
     try:
         Main.run()
-    except BaseException as error:
+    except Call_Error as error:
         print(error)
         print("++ erorr ++")
