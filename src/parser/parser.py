@@ -4,6 +4,8 @@ from src.custom_error import Call_Error
 import json
 import os
 from typing import Dict, List, Any
+# from jsonschema import validate
+# from jsonschema.exceptions import ValidationError
 
 
 class ParserArgs:
@@ -66,24 +68,46 @@ class ParserReadData:
 
 class Parser:
     def __init__(self) -> None:
-        self.__function_definition = None
-        self.__promtes = None
-        self.__parser_data: ParserReadData
+        self.__function_definition: List[Dict[Any, Any]] | None = None
+        self.__promtes: List[Dict[Any, Any]] | None = None
+        self.__parserReaddata: ParserReadData
         self.args: argparse.Namespace
 
     def run(self) -> None:
         self.set_args()
-        self.__parser_data = ParserReadData()
+        self.__parserReaddata = ParserReadData()
         self.__set_promtes()
         self.__set_function_def()
+        self.__valid_data_json()
+
+    def __valid_data_json(self) -> None:
+        if self.__promtes is not None:
+            self.__valid_promtes()
+        if self.__function_definition is not None:
+            self.__valid_function_definition()
+
+    def __valid_promtes(self) -> None:
+        path = Path("schema.json")
+        self.__valid_path(path)
+        with open(path, 'r') as file:
+            json.load(file)
+
+    def __valid_function_definition(self) -> None:
+        pass
+
+    def __valid_path(self, path: Path) -> None:
+        if not path.exists():
+            raise Call_Error("sssssssssss")
+        if not os.access(path, os.R_OK):
+            raise Call_Error("sssssssssssssss")
 
     def set_args(self) -> None:
         self.args = ParserArgs().run()
 
     def __set_function_def(self) -> None:
         self.__function_definition = self.\
-            __parser_data.get_function_definition(
+            __parserReaddata.get_function_definition(
                 self.args.functions_definition)
 
     def __set_promtes(self) -> None:
-        self.__promtes = self.__parser_data.get_promtes(self.args.input)
+        self.__promtes = self.__parserReaddata.get_promtes(self.args.input)
