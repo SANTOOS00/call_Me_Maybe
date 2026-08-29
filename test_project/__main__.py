@@ -1,12 +1,13 @@
 
-from src.parser import Parser
-import sys
+
+from .test_parser.test_schemas import test_scheam
+# import sys    
 
 
-def test_parser() -> None:
-    parser = Parser()
-    parser.run()
+# def test_parser() -> None:
+#     parser = Parser()
+#     parser.run()
 
 
 if __name__ == "__main__":
-    test_parser()
+    test_scheam()

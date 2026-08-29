@@ -1,9 +1,0 @@
-{
-    "type": "arrye",
-    "items":{
-        "required": ["prompt"],
-        "propertes":{"prompt":{"type": "string"}
-    },
-    "additionalProperties": true
-    }
-}

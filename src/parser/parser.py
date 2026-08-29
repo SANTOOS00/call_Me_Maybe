@@ -4,8 +4,6 @@ from src.custom_error import Call_Error
 import json
 import os
 from typing import Dict, List, Any
-# from jsonschema import validate
-# from jsonschema.exceptions import ValidationError
 
 
 class ParserArgs:
