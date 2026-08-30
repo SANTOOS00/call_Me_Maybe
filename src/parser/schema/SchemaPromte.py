@@ -1,5 +1,5 @@
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 
 
 class SchemaPromte(BaseModel):
-    age: int
+    promte: str

@@ -17,14 +17,8 @@
   {
     "name": "fn_greet",
     "description": "Generate a greeting message for a person by name.",
-    "parameters": {
-      "name": {
-        "type": "string"
-      }
-    },
-    "returns": {
-      "type": "string"
-    }
+    "parameters": {"name": {"type": "string"}},
+    "returns": {"type": "string"}
   },
   {
     "name": "fn_reverse_string",
