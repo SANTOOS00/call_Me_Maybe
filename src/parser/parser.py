@@ -1,9 +1,11 @@
-import argparse
 from pathlib import Path
 from src.custom_error import Call_Error
+from typing import Dict, List, Any
+from .schema import SchemaFunDefn, SchemaPrompt
+
+import argparse
 import json
 import os
-from typing import Dict, List, Any
 
 
 class ParserArgs:
@@ -45,58 +47,52 @@ class ParserArgs:
 
 
 class ParserReadData:
-    def get_promtes(self, path: Path) -> List[Dict[Any, Any]]:
-        self.__valid_path(path)
+    def get_prompts(self, path: Path) -> List[Dict[Any, Any]]:
         with open(path, "r") as fd:
             promtes = json.load(fd)
         return promtes
 
-    def get_function_definition(self, path: Path) -> List[Dict[Any, Any]]:
-        self.__valid_path(path)
+    def get_functions_definition(self, path: Path) -> List[Dict[Any, Any]]:
         with open(path, "r") as fd:
-            promtes = json.load(fd)
-        return promtes
+            prompts: List = json.load(fd)
+        return self.valid_functions_definition(prompts)
 
-    def __valid_path(self, path: Path) -> None:
-        if not path.exists():
-            raise Call_Error("sssssssssss")
-        if not os.access(path, os.R_OK):
-            raise Call_Error("sssssssssssssss")
+    def valid_functions_definition(prompts: List) -> None:
+        print(prompts)
 
 
 class Parser:
     def __init__(self) -> None:
-        self.__function_definition: List[Dict[Any, Any]] | None = None
-        self.__promtes: List[Dict[Any, Any]] | None = None
-        self.__parserReaddata: ParserReadData
+        self.__function_definition: List[SchemaFunDefn]
+        self.__prompts: List[SchemaPrompt]
+        self.__data: ParserReadData
         self.args: argparse.Namespace
 
     def run(self) -> None:
-        self.set_args()
-        self.__parserReaddata = ParserReadData()
+        self.__set_args()
+        self.__data = ParserReadData()
         self.__set_promtes()
-        self.__set_function_def()
+        self.__set_functions_definition()
         self.__valid_data_json()
 
     def __valid_data_json(self) -> None:
-        if self.__promtes is not None:
-            self.__valid_path(self.args.input)
-        if self.__function_definition is not None:
-            self.__valid_path(self.args.functions_definition)
+        self.__valid_path(self.args.input)
+        self.__valid_path(self.args.functions_definition)
 
-    def __valid_path(self, path: Path) -> None:
+    @staticmethod
+    def __valid_path(path: Path) -> None:
         if not path.exists():
             raise Call_Error("[ERROR]: Path does not existe")
         if not os.access(path, os.R_OK):
             raise Call_Error("[ERROR]: File is not readable")
 
-    def set_args(self) -> None:
+    def __set_args(self) -> None:
         self.args = ParserArgs().run()
 
-    def __set_function_def(self) -> None:
+    def __set_functions_definition(self) -> None:
         self.__function_definition = self.\
-            __parserReaddata.get_function_definition(
+            __data.get_function_definitions(
                 self.args.functions_definition)
 
     def __set_promtes(self) -> None:
-        self.__promtes = self.__parserReaddata.get_promtes(self.args.input)
+        self.__prompts = self.__data.get_prompts(self.args.input)

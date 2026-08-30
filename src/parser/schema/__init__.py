@@ -1,4 +1,4 @@
 from .SchemaFunDefn import SchemaFunDefn
-from .SchemaPromte import SchemaPromte
+from .SchemaPrompt import SchemaPrompt
 
-__all__ =["SchemaPromte", "SchemaFunDefn"]
+__all__ =["SchemaPrompt", "SchemaFunDefn"]

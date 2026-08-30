@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
 
-class SchemaPromte(BaseModel):
+class SchemaPrompt(BaseModel):
     promte: str

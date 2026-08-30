@@ -1,5 +1,5 @@
 from src.parser.schema.SchemaFunDefn import SchemaFunDefn
-from src.parser.schema.SchemaPromte import SchemaPromte
+from src.parser.schema.SchemaPrompt import SchemaPromte
 
 
 class A:
