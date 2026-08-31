@@ -1,4 +1,4 @@
-from .SchemaFunDefn import SchemaFunDefn
-from .SchemaPrompt import SchemaPrompt
+from .SchemaFunDefn import Function_Defn
+from .SchemaPrompt import Prompt
 
 __all__ =["SchemaPrompt", "SchemaFunDefn"]

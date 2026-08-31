@@ -1,7 +1,8 @@
 from pathlib import Path
 from src.custom_error import Call_Error
 from typing import Dict, List, Any
-from .schema import SchemaFunDefn, SchemaPrompt
+from .schema import Function_Defn, Prompt
+from pydantic import ValidationError
 
 import argparse
 import json
@@ -47,31 +48,28 @@ class ParserArgs:
 
 
 class ParserReadData:
-    def get_prompts(self, path: Path) -> List[Dict[Any, Any]]:
+    def get_prompts(self, path: Path) -> List[Prompt]:
         with open(path, "r") as fd:
-            promtes = json.load(fd)
-        return promtes
+            prompts = json.load(fd)
+        return [Prompt(**prompt) for prompt in prompts]
 
-    def get_functions_definition(self, path: Path) -> List[Dict[Any, Any]]:
+    def get_functions_definition(self, path: Path) -> List[Function_Defn]:
         with open(path, "r") as fd:
-            prompts: List = json.load(fd)
-        return self.valid_functions_definition(prompts)
-
-    def valid_functions_definition(prompts: List) -> None:
-        print(prompts)
+            function_defn: List = json.load(fd)
+        return [Function_Defn(**fun) for fun in function_defn]
 
 
 class Parser:
     def __init__(self) -> None:
-        self.__function_definition: List[SchemaFunDefn]
-        self.__prompts: List[SchemaPrompt]
+        self.__function_definition: List[Function_Defn]
+        self.__prompts: List[Prompt]
         self.__data: ParserReadData
         self.args: argparse.Namespace
 
     def run(self) -> None:
         self.__set_args()
         self.__data = ParserReadData()
-        self.__set_promtes()
+        self.__set_prompts()
         self.__set_functions_definition()
         self.__valid_data_json()
 
@@ -90,9 +88,19 @@ class Parser:
         self.args = ParserArgs().run()
 
     def __set_functions_definition(self) -> None:
-        self.__function_definition = self.\
-            __data.get_function_definitions(
-                self.args.functions_definition)
+        try:
+            self.__function_definition = self.__data.get_functions_definition(self.args.functions_definition)
+        except ValidationError as e:
+            print(e)
 
-    def __set_promtes(self) -> None:
-        self.__prompts = self.__data.get_prompts(self.args.input)
+    def __set_prompts(self) -> None:
+        try:
+            self.__prompts = self.__data.get_prompts(self.args.input)
+        except ValidationError as e:
+            print(e)
+
+    def get_prompts(self) -> List[Prompt]:
+        return self.__prompts
+
+    def get_functions_def(self) -> List[Function_Defn]:
+        return self.__function_definition
