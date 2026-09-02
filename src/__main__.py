@@ -21,14 +21,14 @@ class Main:
     def run_module(cls) -> None:
         model = Small_LLM_Model()
         prompt = cls.data.get_prompts()[0]
-
         generated_ids: list[int] = [int(dd) for dd in model.encode(prompt.prompt).flatten()]
         
 
         while True:
             logits = model.get_logits_from_input_ids(generated_ids)
             ss: int = np.argmax(logits)
-            generated_ids.append(ss)
+            generated_ids.append(int(ss))
+            # print(generated_ids)
 
             print(model.decode(ss), flush=True, end="")
 
