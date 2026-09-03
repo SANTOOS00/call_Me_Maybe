@@ -10,8 +10,3 @@ dependencies = [
     "torch>=2.0.0",
     "transformers>=5.16.1",
 ]
-
-[tool.uv.workspace]
-members = [
-    "test_project",
-]

@@ -8,7 +8,7 @@ class Type(BaseModel):
     type: types
 
 
-class Function_Defn(BaseModel):
+class FunctionDefn(BaseModel):
     name: str
     description: str
     parameters: Dict[str, Type]

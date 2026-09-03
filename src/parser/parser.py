@@ -1,8 +1,9 @@
 from pathlib import Path
 from src.custom_error import Call_Error
-from typing import Dict, List, Any
-from .schema import Function_Defn, Prompt
+from typing import List
+from .schema import FunctionDefn, Prompt
 from pydantic import ValidationError
+
 
 import argparse
 import json
@@ -53,15 +54,15 @@ class ParserReadData:
             prompts = json.load(fd)
         return [Prompt(**prompt) for prompt in prompts]
 
-    def get_functions_definition(self, path: Path) -> List[Function_Defn]:
+    def get_functions_definition(self, path: Path) -> List[FunctionDefn]:
         with open(path, "r") as fd:
             function_defn: List = json.load(fd)
-        return [Function_Defn(**fun) for fun in function_defn]
+        return [FunctionDefn(**fun) for fun in function_defn]
 
 
 class Parser:
     def __init__(self) -> None:
-        self.__function_definition: List[Function_Defn]
+        self.__function_definition: List[FunctionDefn]
         self.__prompts: List[Prompt]
         self.__data: ParserReadData
         self.args: argparse.Namespace
@@ -102,5 +103,5 @@ class Parser:
     def get_prompts(self) -> List[Prompt]:
         return self.__prompts
 
-    def get_functions_def(self) -> List[Function_Defn]:
+    def get_functions_def(self) -> List[FunctionDefn]:
         return self.__function_definition
