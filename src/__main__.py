@@ -1,7 +1,7 @@
 from .parser import Parser
 from .custom_error import Call_Error
 from .llm_manager import GenerterLLM
-
+from .system_prompt import SystemPrompt
 import sys
 
 class Main:
@@ -19,12 +19,10 @@ class Main:
 
     @classmethod
     def run_model(cls) -> None:
-        funs_defin = cls.data_input.get_functions_def()
-        prompts = cls.data_input.get_prompts()
+        systemprompt = SystemPrompt(cls.data_input.get_functions_def())
         model = GenerterLLM(
-            functions_difiniton=funs_defin,
-            prompts=prompts
-            )
+            systemprompt=systemprompt, 
+            prompts=cls.data_input.get_prompts())
         model.run()
 
 

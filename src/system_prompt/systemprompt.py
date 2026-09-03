@@ -12,7 +12,7 @@ class PromptType(Enum):
         Give me the function name only.
 
     AVAILABLE FUNCTIONS:
-    {FUNCTIONS}
+{FUNCTIONS}
 
     USER PROMPT:
     {PROMPT}
@@ -26,30 +26,22 @@ class Steps(Enum):
 
 class SystemPrompt:
     def __init__(self, 
-                 functions_difiniton: List[FunctionDefn] | None,
-                 prompts: List[Prompt] | None) -> None:
-        self.prompt_type = PromptType
-        
-
-        if prompts is None:
-            raise Call_Error("")
-        
+                 functions_difiniton: List[FunctionDefn] | None) -> None:        
         if functions_difiniton is None:
             raise Call_Error("")
 
         self.functions_defn = functions_difiniton
-        self.prompts = prompts
+        self.prompt_type = PromptType
 
-    def get_step(self, step: Steps) -> str:
+    def get_step(self, step: Steps, prompt: Prompt) -> str:
         match step.value:
-            case Steps.value:
-                return self.__make_prompt_function_name()
+            case Steps.FUNCTIONS_NAME.value:
+                return self.__make_prompt_function_name(prompt)
             case _:
                 return ""
 
-    def __make_prompt_function_name(self) -> str:
-        self.join_prompt()
-        return ""
-
-    def join_prompt(self) -> str:
-        return ""
+    def __make_prompt_function_name(self, prompt: Prompt) -> str:
+        return PromptType.FUNCTION_NAME.value.format(
+            FUNCTIONS="".join(f'\t-{fun.name}\n' for fun in self.functions_defn),
+            PROMPT=prompt
+        )
