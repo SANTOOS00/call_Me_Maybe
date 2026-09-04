@@ -33,14 +33,14 @@ class SystemPrompt:
         self.functions_defn = functions_difiniton
         self.prompt_type = PromptType
 
-    def get_step(self, step: Steps, prompt: Prompt) -> str:
+    def get_step_generator(self, step: Steps, prompt: str) -> str:
         match step.value:
             case Steps.FUNCTIONS_NAME.value:
                 return self.__make_prompt_function_name(prompt)
             case _:
                 return ""
 
-    def __make_prompt_function_name(self, prompt: Prompt) -> str:
+    def __make_prompt_function_name(self, prompt: str) -> str:
         return PromptType.FUNCTION_NAME.value.format(
             FUNCTIONS="".join(f'\t-{fun.name}\n' for fun in self.functions_defn),
             PROMPT=prompt

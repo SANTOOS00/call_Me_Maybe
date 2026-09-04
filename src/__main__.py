@@ -1,7 +1,9 @@
 from .parser import Parser
 from .custom_error import Call_Error
-from .llm_manager import GenerterLLM
+from .llm_manager import MangerLLM
 from .system_prompt import SystemPrompt
+from .generator import Generator
+
 import sys
 
 class Main:
@@ -20,10 +22,18 @@ class Main:
     @classmethod
     def run_model(cls) -> None:
         systemprompt = SystemPrompt(cls.data_input.get_functions_def())
-        model = GenerterLLM(
+        model = MangerLLM(
             systemprompt=systemprompt, 
-            prompts=cls.data_input.get_prompts())
-        model.run()
+            )
+        generator = Generator(
+            prompts=cls.data_input.get_prompts(),
+            model=model
+            )
+        generator.run()
+        
+
+        
+        
 
 
 
