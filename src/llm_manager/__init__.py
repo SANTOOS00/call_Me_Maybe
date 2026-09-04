@@ -1,3 +1,3 @@
-from .generatermodel import MangerLLM
+from .generatermodel import ManagerLLM
 
-__all__ = ["MangerLLM"]
+__all__ = ["ManagerLLM"]

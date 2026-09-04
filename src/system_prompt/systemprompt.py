@@ -7,6 +7,7 @@ from src.custom_error import Call_Error
 
 
 class PromptType(Enum):
+    
     FUNCTION_NAME = """
     Task:
         Give me the function name only.
