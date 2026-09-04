@@ -2,7 +2,8 @@ from ..parser import Prompt
 from typing import List
 from ..llm_manager import ManagerLLM
 from ..system_prompt import Steps
-import numpy as np
+from ..custom_error import Call_Error
+import numpy as np # type: ignore[import-untyped, unused-ignore]
 
 
 class Generator:
@@ -28,7 +29,7 @@ class Generator:
 
                 high_score_id: int = np.argmax(logits)
                 self.add_next_token(high_score_id)
-                print(self.model.decode_token(high_score_id), end='', flush=True)
+                Call_Error.string += self.model.decode_token(high_score_id)
 
     def build_prompt_ids(self, prompt: str) -> List[int]:
         return self.model.get_prompt_ids(prompt)

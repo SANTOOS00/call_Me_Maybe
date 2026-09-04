@@ -35,7 +35,8 @@ class Main:
 if __name__ == "__main__":
     try:
         Main.run()
-    except Call_Error as error:
+    except BaseException as error:
         print(error, file=sys.stderr)
         print("++ erorr ++")
+        print(Call_Error.string)
         sys.exit(1)

@@ -11,22 +11,22 @@ class Trie:
     def __init__(self) -> None:
         self.RootTrie = Node()
 
-    def insert(self, string: str) -> None:
+    def insert(self, key: str) -> None:
         root_node = self.RootTrie
-        for c in string:
+        for c in key:
             index = ord(c)
             if root_node.childern[index] is None:
                 root_node.childern[index] = Node()
             root_node = root_node.childern[index]
         root_node.isLeaf = True
+    def search(self, key) -> bool:
+        root = self.RootTrie
+        for c in key:
+            index = ord(c)
+            if root.childern[index] is None:
+                return False
+            root = root.childern[index]
+        return root.isLeaf
 
-
-
-def main() -> None:
-    function = ["and", "ant", "dad", "do"]
-    trie = Trie()
-    for fu in function:
-        trie.insert(fu)
-
-if __name__ == "__main__":
-    main()
+    def isPrefix(self, prefix) -> bool:
+        pass
