@@ -92,7 +92,8 @@ class Parser:
         try:
             self.__function_definition = self.__data.get_functions_definition(self.args.functions_definition)
         except ValidationError as e:
-            print(e)
+            raise Call_Error(str(e))
+            
 
     def __set_prompts(self) -> None:
         try:

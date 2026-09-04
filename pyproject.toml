@@ -3,10 +3,33 @@ name = "call-me-maybe"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
+authors = [
+    { name = "SANTOOS00", email = "mohamederraiss@icloud.com" }
+]
 requires-python = ">=3.11"
 dependencies = [
-    "flake8>=7.3.0",
+    "llm-sdk",
+    "numpy>=2.4.6",
     "pydantic>=2.13.5",
-    "torch>=2.0.0",
-    "transformers>=5.16.1",
 ]
+
+
+[project.scripts]
+call-me-maybe = "src.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src" = "src"
+
+[tool.uv.sources]
+llm-sdk = { workspace = true }
+
+[tool.uv.workspace]
+members = ["llm_sdk"]
+
