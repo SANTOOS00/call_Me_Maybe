@@ -10,7 +10,7 @@ class PromptType(Enum):
     
     FUNCTION_NAME = """
     Task:
-        Give me the function name only.
+        Give me the function name only in AVAILABLE FUNCTIONS.
 
     AVAILABLE FUNCTIONS:
 {FUNCTIONS}
