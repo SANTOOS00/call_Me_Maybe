@@ -8,38 +8,38 @@ from .trie import Trie
 import sys
 
 class Main:
-    data_input: Parser
+    data: Parser
 
-    def run(self) -> None:
-        self.parser()
-        self.run_model()
+    
+    @classmethod
+    def run(cls) -> None:
+        cls.parser()
+        cls.run_model()
 
-    def parser(self) -> None:
-        self.data_input = Parser()
-        self.data_input.run()
+    @classmethod
+    def parser(cls) -> None:
+        cls.data = Parser()
+        cls.data.run()
 
-    def run_model(self) -> None:
-        self.init_trie()
-        systemprompt = SystemPrompt(Main.data_input.get_functions_def())
+    @classmethod
+    def run_model(cls) -> None:
+        systemprompt = SystemPrompt(cls.data.get_functions_def())
         model = ManagerLLM(
             system_prompt=systemprompt, 
             )
         generator = Generator(
-            prompts=Main.data_input.get_prompts(),
+            prompts=cls.data.get_prompts(),
+            functions_dif=cls.data.get_functions_def(),
             model=model
             )
         generator.run()
-
-    def init_trie(self) -> None:
-        for 
-        Trie().insert()
 
 
 if __name__ == "__main__":
     try:
         call_me_maybe = Main()
         call_me_maybe.run()
-    except BaseException as error:
+    except Call_Error as error:
         print(error, file=sys.stderr)
         print("++ erorr ++")
         print(Call_Error.string)

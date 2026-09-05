@@ -9,11 +9,11 @@ class Node:
 
 
 class Trie:
-    _instance = None
-    def __new__(cls) -> Self:
-        if cls._insert is None:
-            cls._insert = super().__new__(cls)
-        return cls._insert
+    # _instance = None
+    # def __new__(cls) -> Self:
+    #     if cls._instance is None:
+    #         cls._instance = super().__new__(cls)
+    #     return cls._instance
 
     def __init__(self) -> None:
         self.RootTrie = Node()

@@ -1,8 +1,10 @@
-from pathlib import Path
 from src.custom_error import Call_Error
 from typing import List
 from .schema import FunctionDefn, Prompt
-from pydantic import ValidationError
+
+
+from pydantic import ValidationError # type: ignore[import-untyped, unused-ignore]
+from pathlib import Path
 
 
 import argparse
@@ -90,8 +92,9 @@ class Parser:
 
     def __set_functions_definition(self) -> None:
         try:
-            self.__function_definition = self.__data.get_functions_definition(self.args.functions_definition)
-        except ValidationError as e:
+            self.__function_definition = self.__data.get_functions_definition(
+                self.args.functions_definition)
+        except ValidationError as e:    
             raise Call_Error(str(e))
             
 

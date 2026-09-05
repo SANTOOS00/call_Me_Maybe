@@ -1,5 +1,5 @@
 from typing import List
-from llm_sdk import Small_LLM_Model
+from llm_sdk import Small_LLM_Model # type: ignore[import-untyped, unused-ignore]
 from ..system_prompt import SystemPrompt
 
 

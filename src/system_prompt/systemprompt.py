@@ -22,7 +22,6 @@ class PromptType(Enum):
 
 class Steps(Enum):
     FUNCTIONS_NAME = "FUNCTION_NAME"
-    NEXT = "NEXT"
 
 
 class SystemPrompt:
