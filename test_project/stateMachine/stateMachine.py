@@ -36,5 +36,14 @@ def main() -> None:
     # for fu in function:
     #     trie.insert(fu)
 
+    string = "sim santoos"
+
+    for ch in string:
+        print(ch)
+        string = string.replace(ch , "", 1)
+    print(string)
+            
+
+# print(s[:i] + s[i+1:])
 if __name__ == "__main__":
     main()

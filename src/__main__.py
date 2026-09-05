@@ -40,7 +40,7 @@ if __name__ == "__main__":
     try:
         call_me_maybe = Main()
         call_me_maybe.run()
-    except Call_Error as error:
+    except BaseException as error:
         print(error, file=sys.stderr)
         print("++ erorr ++")
         print(Call_Error.string)

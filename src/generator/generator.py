@@ -1,6 +1,7 @@
 from ..parser import Prompt, FunctionDefn
 from ..llm_manager import ManagerLLM
 from ..system_prompt import Steps
+from ..custom_error import Call_Error
 from ..trie import Trie
 
 
@@ -50,8 +51,13 @@ class Tokenizer:
         return True
                                    
     def valid_forma_name_function(self) -> bool:
-        
+        for ch in self.tokens:
+            if self.trie.isPrefix(self.tokens):
+                return self.trie.search(self.tokens)
+            else:
+                self.tokens = self.tokens.replace(ch, "", 1)
         return False
+
 
     
 class Generator:
@@ -90,8 +96,10 @@ class Generator:
                 high_score_id = int(np.argmax(logits))
                 self.add_next_token(high_score_id)
                 trie.add_token(self.model.decode_token(high_score_id))
+                Call_Error.string = trie.tokens
                 if trie.check_valid_tokens(step):
                     break
+            print(trie.tokens)
 
     def build_prompt_ids(self, prompt: str) -> List[int]:
         return self.model.get_prompt_ids(prompt)
