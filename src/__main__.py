@@ -7,6 +7,7 @@ from .trie import Trie
 
 import sys
 
+
 class Main:
     data: Parser
 

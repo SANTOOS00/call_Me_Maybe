@@ -30,6 +30,7 @@ class Tokenizer:
     def populate_trie_with_function_names(self,
                                           functions_name: List[str]
                                           ) -> None:
+       
         for name in functions_name:
             self.trie.insert(name)
 
@@ -47,10 +48,10 @@ class Tokenizer:
             case _:
                 return False
         return True
-
+                                   
     def valid_forma_name_function(self) -> bool:
-        print('is perfict')
-        return True
+        
+        return False
 
     
 class Generator:

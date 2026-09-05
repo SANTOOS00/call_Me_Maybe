@@ -1,5 +1,18 @@
 from typing import List, Optional, Self
-from ..custom_error import Call_Error
+# from ..custom_error import Call_Error
+
+
+from typing import Dict
+
+
+class Call_Error(Exception):
+    string = ""
+    def __init__(self, message: str, **context: str) -> None:
+        super().__init__(self.format_message(message, context))
+
+    def format_message(self, message: str, context: Dict[str, str]) -> str:
+        return f"{message} {context}"
+
 
 
 class Node:
@@ -9,32 +22,26 @@ class Node:
 
 
 class Trie:
-    # _instance = None
-    # def __new__(cls) -> Self:
-    #     if cls._instance is None:
-    #         cls._instance = super().__new__(cls)
-    #     return cls._instance
-
     def __init__(self) -> None:
         self.RootTrie = Node()
 
     def insert(self, key: str) -> None:
-        root_node = self.RootTrie
-        for c in key:
-            index = ord(c)
-            if index > 255 or root_node is None:
-                raise Call_Error("")
-            if root_node.childern[index] is None:
-                root_node.childern[index] = Node()
-            root_node = root_node.childern[index]
-        if root_node is not None:
-            root_node.isLeaf = True
+            root_node = self.RootTrie
+            for c in key:
+                index = ord(c)
+                if root_node is None:
+                    raise Call_Error("")
+                if root_node.childern[index] is None:
+                    root_node.childern[index] = Node()
+                root_node = root_node.childern[index]
+            if root_node is not None:
+                root_node.isLeaf = True
 
     def search(self, key) -> bool:
         root = self.RootTrie
         for c in key:
             index = ord(c)
-            if index > 255 or root is None:
+            if root is None:
                 return False
             if root.childern[index] is None:
                 return False
@@ -42,4 +49,32 @@ class Trie:
         if root is None:
             return False
         return root.isLeaf
-    
+
+    def isPrefix(self, key) -> bool:
+        root = self.RootTrie
+        for c in key:
+            index = ord(c)
+            if root is None:
+                return False
+            if root.childern[index] is None:
+                return False
+            root = root.childern[index]
+        return True
+
+if __name__ == "__main__":
+    functions = [
+        "fn_add_num\0",
+        "fn_add_numbers_sum",
+        "fn_greet",
+        "fn_reverse_string",
+        "fn_get_square_root",
+        "fn_substitute_string_with_regex"
+    ]
+    trie = Trie()
+    for fun in functions:
+        trie.insert(fun)
+
+    tkones = "abs jdn i f iwnfun fn_add_num\0"
+    for index, char in enumerate(tkones):
+        string = tkones[index:]
+        print(trie.isPrefix(string))

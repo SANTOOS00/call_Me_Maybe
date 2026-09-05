@@ -23,10 +23,18 @@ class Trie:
 
 
 def main() -> None:
-    function = ["and", "ant", "dad", "do"]
-    trie = Trie()
-    for fu in function:
-        trie.insert(fu)
+    # print(chr(ord('È') + ord('8')))
+    # print(chr(ord("1") + ord("z") + ord("z")))
+
+
+    # ss = ["edew", "egwt","aaaa"]
+    # print(max([len(st) for st in ss]))
+
+ 
+    # function = ["and", "ant", "dad", "do"]
+    # trie = Trie()
+    # for fu in function:
+    #     trie.insert(fu)
 
 if __name__ == "__main__":
     main()
