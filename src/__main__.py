@@ -25,13 +25,10 @@ class Main:
     @classmethod
     def run_model(cls) -> None:
         systemprompt = SystemPrompt(cls.data.get_functions_def())
-        model = ManagerLLM(
-            system_prompt=systemprompt, 
-            )
         generator = Generator(
             prompts=cls.data.get_prompts(),
             functions_dif=cls.data.get_functions_def(),
-            model=model
+            system_prompt=systemprompt
             )
         generator.run()
 

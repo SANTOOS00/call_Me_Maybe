@@ -53,7 +53,7 @@
       },
       "regex": {
         "type": "string"
-      },
+      },    
       "replacement": {
         "type": "string"
       }

@@ -1,13 +1,12 @@
 from typing import List
 from llm_sdk import Small_LLM_Model # type: ignore[import-untyped, unused-ignore]
-from ..system_prompt import SystemPrompt
+
 
 
 class ManagerLLM:
-    def __init__(self, system_prompt: SystemPrompt) -> None:
+    def __init__(self) -> None:
         self.model = Small_LLM_Model()
-        self.system_prompt = system_prompt
-        self.generated_ids: List[int] = []
+        
 
     def get_prompt_ids(self, prompt: str) -> List[int]:
         prompt_ids = self.model.encode(prompt)
