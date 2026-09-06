@@ -31,7 +31,6 @@ class Tokenizer:
 
     def populate_trie_with_parameters(self,
                                       parameters: List[str]) -> None:
-        print(parameters)
         for parameter in parameters:
             self.trie.insert(parameter)
 
@@ -54,7 +53,7 @@ class Tokenizer:
             case Steps.FUNCTIONS_NAME.value:
                 return self.valid_tokenizer()
             case Steps.PARAMETER.value:
-                return self.valid_tokenizer()
+                return False
         return True
                                    
     def valid_tokenizer(self) -> bool:
@@ -104,9 +103,10 @@ class Generator(ManagerLLM):
                 self.add_next_token(high_score_id)
                 trie.add_token(self.decode_token(high_score_id))
                 Call_Error.string = trie.tokens
+                print(trie.tokens, flush=True)
                 if trie.check_valid_tokens(step):
                     break
-            print(trie.tokens)
+            # print(trie.tokens)
 
     def build_prompt_ids(self, prompt: str) -> List[int]:
         return self.get_prompt_ids(prompt)
