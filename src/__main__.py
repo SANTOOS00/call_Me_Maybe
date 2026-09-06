@@ -27,7 +27,7 @@ class Main:
         systemprompt = SystemPrompt(cls.data.get_functions_def())
         generator = Generator(
             prompts=cls.data.get_prompts(),
-            functions_dif=cls.data.get_functions_def(),
+            functions_def=cls.data.get_functions_def(),
             system_prompt=systemprompt
             )
         generator.run()

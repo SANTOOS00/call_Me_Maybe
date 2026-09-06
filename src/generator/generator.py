@@ -10,12 +10,14 @@ import numpy as np # type: ignore[import-untyped, unused-ignore]
 from typing import List
 
 
-class Tokenizer(FunCallBuilder, Trie):
+class Tokenizer(ManagerLLM, FunCallBuilder, Trie):
     def __init__(self,
                  functions_def: List[FunctionDefn]
                  ) -> None:
         self.tokens: str = ""
         self.functions_def = functions_def
+
+        super().__init__()
 
     def check_valid_tokens(self, step: Steps) -> bool:
         match step.value:
@@ -67,19 +69,17 @@ class Tokenizer(FunCallBuilder, Trie):
         self.tokens += token
 
 
-class Generator(ManagerLLM):
+class Generator(Tokenizer):
     def __init__(self,
                  prompts: List[Prompt],
-                 functions_dif: List[FunctionDefn],
+                 functions_def: List[FunctionDefn],
                  system_prompt: SystemPrompt
                  ) -> None:
         self.generator_ids: List[int] = []
         self.__prompts: List[Prompt] = prompts
         self.system_prompt = system_prompt
-        self.functions_dif = functions_dif
-        self.trie = Tokenizer(self.functions_dif)
 
-        super().__init__()
+        super().__init__(functions_def=functions_def)
 
     def clean_genertor_ids(self) -> None:
         self.generator_ids: List[int] = []
@@ -88,11 +88,13 @@ class Generator(ManagerLLM):
         for prompt in self.__prompts:
             self.generate_for_prompt(prompt.prompt)
 
+    def clean(self) -> None:
+        self.clean_genertor_ids()
+        super().clean()
+
     def generate_for_prompt(self, prompt: str) -> None:
-        trie = self.trie
         for step in Steps:
-            self.clean_genertor_ids()
-            trie.clean()
+            self.clean()
             prompt_str = self.system_prompt.get_step_generator(step, prompt)
             prompt_ids: List[int] = self.build_prompt_ids(prompt_str)
             self.generator_ids = prompt_ids
@@ -100,12 +102,12 @@ class Generator(ManagerLLM):
                 logits: List[float] = self.get_logits(self.generator_ids)
                 high_score_id = int(np.argmax(logits))
                 self.add_next_token(high_score_id)
-                trie.add_token(self.decode_token(high_score_id))
-                if trie.check_valid_tokens(step):
+                self.add_token(self.decode_token(high_score_id))
+                if self.check_valid_tokens(step):
                     if step.value == Steps.FUNCTIONS_NAME.value:
-                        trie.set_name_function()
-                        trie.set_prompt(prompt)
-                        trie.prints()
+                        self.set_name_function()
+                        self.set_prompt(prompt)
+                        self.prints()
                     break
 
     def build_prompt_ids(self, prompt: str) -> List[int]:
