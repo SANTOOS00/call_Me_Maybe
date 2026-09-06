@@ -1,5 +1,4 @@
-from typing import List, Optional, Self
-# from ..custom_error import Call_Error
+from typing import List, Optional
 
 
 from typing import Dict
@@ -61,20 +60,5 @@ class Trie:
             root = root.childern[index]
         return True
 
-if __name__ == "__main__":
-    functions = [
-        "fn_add_num\0",
-        "fn_add_numbers_sum",
-        "fn_greet",
-        "fn_reverse_string",
-        "fn_get_square_root",
-        "fn_substitute_string_with_regex"
-    ]
-    trie = Trie()
-    for fun in functions:
-        trie.insert(fun)
-
-    tkones = "abs jdn i f iwnfun fn_add_num\0"
-    for index, char in enumerate(tkones):
-        string = tkones[index:]
-        print(trie.isPrefix(string))
+    def clean_trie(self) -> None:
+        self.RootTrie = Node()
