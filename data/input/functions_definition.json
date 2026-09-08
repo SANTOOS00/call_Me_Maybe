@@ -1,5 +1,17 @@
 [
   {
+    "name": "fn_reverse_string",
+    "description": "Reverse a string and return the reversed result.",
+    "parameters": {
+      "s": {
+        "type": "string"
+      }
+    },
+    "returns": {
+      "type": "string"
+    }
+  },
+  {
     "name": "fn_add_numbers",
     "description": "Add two numbers together and return their sum.",
     "parameters": {
@@ -21,23 +33,11 @@
     "returns": {"type": "string"}
   },
   {
-    "name": "fn_reverse_string",
-    "description": "Reverse a string and return the reversed result.",
-    "parameters": {
-      "s": {
-        "type": "string"
-      }
-    },
-    "returns": {
-      "type": "string"
-    }
-  },
-  {
     "name": "fn_get_square_root",
     "description": "Calculate the square root of a number.",
     "parameters": {
       "a": {
-        "type": "number"
+        "type": "string"
       }
     },
     "returns": {

@@ -17,7 +17,7 @@ class FunCallBuilder:
         self.paramiters = paramiters
 
     def prints(self) -> None:
-        print(self.name_function, self.prompt, flush=True)
+        print(self.name_function, flush=True)
 
     def clean(self) -> None:
         self.prompt = ""
