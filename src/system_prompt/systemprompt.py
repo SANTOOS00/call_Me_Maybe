@@ -47,12 +47,26 @@ AVAILABLE PARAMETERS:
 SELECTED PARAMETER:"""
 
 
+    VALUE_EXTRACTOR = """You are a precise parameter value extractor.
+
+Task:
+Extract the exact value for the parameter '{parameter_name}' from the USER PROMPT.
+
+Rules:
+1. Return ONLY the raw extracted value (e.g., city name, number, string).
+2. Do NOT include keys, JSON syntax, quotes, or explanations.
+
+PARAMETER NAME: {parameter_name}
+USER PROMPT:
+{prompt}
+
+EXTRACTED VALUE:"""
 
 
 class Steps(Enum):
     FUNCTION_ROUTER = "FUNCTION_ROUTER"
     PARAMETER_IDENTIFIER = "PARAMETER_IDENTIFIER"
-
+    VALUE_EXTRACTOR = "VALUE_EXTRACTOR"
 
 class SystemPrompt:
     def __init__(self, 
@@ -62,15 +76,20 @@ class SystemPrompt:
         self.functions_defn = functions_difiniton
         self.prompt_type = PromptType
 
-    def get_step_generator(self, step: Steps, prompt: str, name_fun: str = "") -> str:
+    def get_step_generator(self, step: Steps, prompt: str, name_fun: str = "", parameter_str: str = "") -> str:
         match step.value:
             case Steps.FUNCTION_ROUTER.value:
                 return self.__make_prompt_function_name(prompt)
             case Steps.PARAMETER_IDENTIFIER.value:
                 return self.__make_prompt_parameter(prompt, name_fun)
-            case _:
-                pass
+            case Steps.VALUE_EXTRACTOR.value:
+                return self._make_prompt_value(prompt, parameter_str)
 
+    def _make_prompt_value(self, pormpt: str, parameter_str: str) -> str:
+        return PromptType.VALUE_EXTRACTOR.value.format(
+            parameter_name=parameter_str,
+            prompt=pormpt
+        )
 
     def get_parameters(self, name_fun: str) -> List[Tuple[Dict[str, Any], str]]:
         return [
@@ -80,7 +99,6 @@ class SystemPrompt:
 
     def __make_prompt_parameter(self, prompt: str, name_fun: str) -> str:
         formatted_params = []
-
         parameters = self.get_parameters(name_fun)
         
         for param_dict, description in parameters:
@@ -100,42 +118,3 @@ class SystemPrompt:
             functions="".join(f'\t-{fun.name} : {fun.description}\n' for fun in self.functions_defn),
             prompt=prompt
         )
-
-
-
-# class FunctionCallingPrompts(Enum):
-#     # 1. تحديد الدالة المناسبة (Function Router)
-
-
-#     # 2. تحديد المعلمات المطلوبة (Required Parameters Identifier)
-
-#     VALUE_EXTRACTOR = """You are a precise parameter value extractor.
-
-# Task:
-# Extract the exact value for the parameter '{parameter_name}' from the USER PROMPT.
-
-# Rules:
-# 1. Return ONLY the raw extracted value (e.g., city name, number, string).
-# 2. Do NOT include keys, JSON syntax, quotes, or explanations.
-
-# PARAMETER NAME: {parameter_name}
-# USER PROMPT:
-# {prompt}
-
-# EXTRACTED VALUE:"""
-
-#     # 4. بناء صيغة الـ JSON المكتملة (JSON Payload Assembler)
-#     JSON_BUILDER = """You are a JSON formatter.
-
-# Task:
-# Construct a valid JSON object representing the tool call for function '{function_name}' with parameter '{parameter_name}' set to '{parameter_value}'.
-
-# Rules:
-# 1. Return ONLY valid JSON.
-# 2. Do NOT write markdown blocks (no ```json).
-
-# FUNCTION NAME: {function_name}
-# PARAMETER NAME: {parameter_name}
-# PARAMETER VALUE: {parameter_value}
-
-# JSON OUTPUT:"""

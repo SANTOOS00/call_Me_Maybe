@@ -27,7 +27,14 @@ class Tokenizer(FunCallBuilder):
             case Steps.PARAMETER_IDENTIFIER.value:
                 self._initialize_step_data(step)
                 return self.valid_tokenizer()
+            case Steps.VALUE_EXTRACTOR.value:
+                self._initialize_step_data(step)
+                return self.valid_parameter()
         return True
+
+    def valid_parameter(self) -> bool:
+        print(self.tokens)
+        return False
 
     def _initialize_step_data(self,
                               current_step: Steps
