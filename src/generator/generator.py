@@ -129,3 +129,7 @@ class Generator:
 
     def add_next_token(self, token_id: int) -> None:
         self.generator_ids.append(token_id)
+
+
+# My model is hallucinating, so I’m going to fix it by making sure it doesn’t exceed a certain maximum token limit.
+

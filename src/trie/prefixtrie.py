@@ -50,3 +50,12 @@ class Trie:
 
     def clean_trie(self) -> None:
         self.RootTrie = Node()
+
+#   I have two functions with similar names, such 
+# as add_number and add_numbers.
+#   When I search using the prefix add, the 
+# model may select add_number even when I actually 
+# need add_numbers. I need to improve the 
+# function-matching logic so that it selects the correct 
+# function based on the full name and context, rather than matching 
+# only the prefix.
