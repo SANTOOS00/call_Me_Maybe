@@ -1,3 +1,4 @@
-from .generator import Generator, Tokenizer
+from .generator import Generator
 
 __all__ = ["Generator"]
+

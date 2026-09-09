@@ -21,7 +21,7 @@ install:
 	@echo "venv environment has been created"
 
 run: install
-	@$(PYTHON) -m $(PROJECT) --functions_definition \
+	$(PYTHON) -m $(PROJECT) --functions_definition \
 	$(FUNCTIONS_DEFINITION_DEF) --output $(OUTPUT_DEF) \
 	--input $(INPUT_DEF)
 

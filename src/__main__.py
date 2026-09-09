@@ -1,39 +1,32 @@
 from .parser import Parser
 from .custom_error import Call_Error
 from .llm_manager import ManagerLLM
-from .system_prompt import SystemPrompt
-from .generator import Generator, Tokenizer
-from .llm_manager import ManagerLLM
+from .generator import Generator
 
 
 import sys
 
 
 class Main:
-    data: Parser
+    def __init__(self) -> None:
+        self.data: Parser
 
-    
-    @classmethod
-    def run(cls) -> None:
-        cls.parser()
-        cls.run_model()
+    def run(self) -> None:
+        self.parser()
+        self.run_model()
 
-    @classmethod
-    def parser(cls) -> None:
-        cls.data = Parser()
-        cls.data.run()
+    def parser(self) -> None:
+        self.data = Parser()
+        self.data.run()
 
-    @classmethod
-    def run_model(cls) -> None:
+    def run_model(self) -> None:
         model = ManagerLLM()
-        tokenizes = Tokenizer(cls.data.get_functions_def())
-        systemprompt = SystemPrompt(cls.data.get_functions_def())
         generator = Generator(
-            prompts=cls.data.get_prompts(),
-            system_prompt=systemprompt,
-            tokenizes=tokenizes,
-            model=model
-            )
+            prompts=self.data.get_prompts(),
+            model=model,
+            functions_defintions=self.data.functions_def,
+            functions_defintions_json=self.data.functions_defintions_json,
+        )
         generator.run()
 
 

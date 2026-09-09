@@ -1,9 +1,9 @@
 from src.custom_error import Call_Error
-from typing import List
 from .schema import FunctionDefn, Prompt
 
+from typing import cast
 
-from pydantic import ValidationError # type: ignore[import-untyped, unused-ignore]
+from pydantic import ValidationError  # type: ignore[import-untyped, unused-ignore]
 from pathlib import Path
 
 
@@ -23,17 +23,12 @@ class ParserArgs:
 
     def __parser_args(self) -> argparse.Namespace:
         self.__parser.add_argument(
-            "--functions_definition", "-f",
-            type=Path,
-            required=True
+            "--functions_definition", "-f", type=Path, required=True
         )
+        self.__parser.add_argument("--output", "-o", type=Path, required=True)
         self.__parser.add_argument(
-            "--output", "-o",
-            type=Path,
-            required=True
-        )
-        self.__parser.add_argument(
-            "--input", "-i",
+            "--input",
+            "-i",
             type=Path,
             required=True,
         )
@@ -42,8 +37,9 @@ class ParserArgs:
 
     def __valdate_paths(self, args: argparse.Namespace) -> None:
         if not args.functions_definition.exists():
-            raise Call_Error("Functions definition file "
-                             f"not found: {args.functions_definition}")
+            raise Call_Error(
+                "Functions definition file " f"not found: {args.functions_definition}"
+            )
         if not args.input.exists():
             raise Call_Error(f"Input file not found: {args.input}")
         if not args.output.exists():
@@ -51,23 +47,24 @@ class ParserArgs:
 
 
 class ParserReadData:
-    def get_prompts(self, path: Path) -> List[Prompt]:
+    def get_prompts(self, path: Path) -> list[Prompt]:
         with open(path, "r") as fd:
             prompts = json.load(fd)
         return [Prompt(**prompt) for prompt in prompts]
 
-    def get_functions_definition(self, path: Path) -> List[FunctionDefn]:
+    def get_functions_definition(self, path: Path) -> tuple[str, list[FunctionDefn]]:
         with open(path, "r") as fd:
-            function_defn: List = json.load(fd)
-        return [FunctionDefn(**fun) for fun in function_defn]
+            function_defn: list = json.load(fd)
+            return fd.read(), [FunctionDefn(**fun) for fun in function_defn]
 
 
 class Parser:
     def __init__(self) -> None:
-        self.__function_definition: List[FunctionDefn]
-        self.__prompts: List[Prompt]
+        self.__function_definition: list[FunctionDefn]
+        self.__prompts: list[Prompt]
         self.__data: ParserReadData
         self.args: argparse.Namespace
+        self.functions_defintions_json: str
 
     def run(self) -> None:
         self.__set_args()
@@ -92,11 +89,13 @@ class Parser:
 
     def __set_functions_definition(self) -> None:
         try:
-            self.__function_definition = self.__data.get_functions_definition(
-                self.args.functions_definition)
-        except ValidationError as e:    
+            self.functions_defintions_json, self.__function_definition = (
+                self.__data.get_functions_definition(
+                    cast(Path, self.args.functions_definition)
+                )
+            )
+        except ValidationError as e:
             raise Call_Error(str(e))
-            
 
     def __set_prompts(self) -> None:
         try:
@@ -104,8 +103,9 @@ class Parser:
         except ValidationError as e:
             print(e)
 
-    def get_prompts(self) -> List[Prompt]:
+    def get_prompts(self) -> list[Prompt]:
         return self.__prompts
 
-    def get_functions_def(self) -> List[FunctionDefn]:
+    @property
+    def functions_def(self) -> list[FunctionDefn]:
         return self.__function_definition

@@ -1,61 +1,38 @@
-from typing import List, Optional
-from ..custom_error import Call_Error
-
-
 class Node:
-    def __init__(self) -> None:
-        self.childern: List[Optional["Node"]]= [None] * 255
+    def __init__(self, value: int | None = None) -> None:
+        self.children: dict[int, Node] = dict()
+        self.value: int | None = value
         self.isLeaf: bool = False
+        self.is_end: bool = True
 
 
 class Trie:
     def __init__(self) -> None:
-        self.RootTrie = Node()
+        self.__root_node: Node = Node()
 
-    def insert(self, key: str) -> None:
-        root_node = self.RootTrie
-        for c in key:
-            index = ord(c)
-            if root_node is None:
-                raise Call_Error("")
-            if root_node.childern[index] is None:
-                root_node.childern[index] = Node()
-            root_node = root_node.childern[index]
-        if root_node is not None:
-            root_node.isLeaf = True
+    def __insert(self, ids: list[int]) -> None:
+        current_node: Node = self.__root_node
+        for id in ids:
+            if id not in current_node.children.keys():
+                current_node.children[id] = Node(id)
+            current_node = current_node.children[id]
+        current_node.isLeaf = True
 
-    def search(self, key) -> bool:
-        root = self.RootTrie
-        for c in key:
-            index = ord(c)
-            if root is None:
-                return False
-            if root.childern[index] is None:
-                return False
-            root = root.childern[index]
-        if root is None:
-            return False
-        return root.isLeaf
+    def get_children(self, ids: list[int]) -> list[int]:
+        current_node: Node = self.__root_node
+        for id in ids:
+            if id not in current_node.children.keys():
+                return []
+            current_node = current_node.children[id]
+        return list(current_node.children.keys())
 
-    def isPrefix(self, key) -> bool:
-        root = self.RootTrie
-        for c in key:
-            index = ord(c)
-            if root is None:
-                return False
-            if root.childern[index] is None:
-                return False
-            root = root.childern[index]
-        return True
+    def insert_many(self, ids: list[list[int]]) -> None:
+        for ids_row in ids:
+            self.__insert(ids_row)
 
-    def clean_trie(self) -> None:
-        self.RootTrie = Node()
 
-#   I have two functions with similar names, such 
-# as add_number and add_numbers.
-#   When I search using the prefix add, the 
-# model may select add_number even when I actually 
-# need add_numbers. I need to improve the 
-# function-matching logic so that it selects the correct 
-# function based on the full name and context, rather than matching 
-# only the prefix.
+if __name__ == "__main__":
+    ids: list[list[int]] = [[12, 434, 434, 5343], [12, 4343242, 4231231, 321321]]
+    trie: Trie = Trie()
+    trie.insert_many(ids)
+    print(trie.get_children([12, 333213, 32321]))
