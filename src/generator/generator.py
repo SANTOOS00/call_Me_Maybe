@@ -1,4 +1,4 @@
-from .function_name_generator import FunctionNameGenerator
+from .module import FunctionNameGenerator, ParameterGenerator
 from ..parser import Prompt, FunctionDefn
 from ..llm_manager import ManagerLLM
 from ..trie import Trie
@@ -29,5 +29,10 @@ class Generator:
                 functions_definitions=self.functions_defintions
             )
             name_generator.generate()
+            parameter_generater: ParameterGenerator = ParameterGenerator(
+                trie=self.trie,
+                functions_definitions=self.functiones_definition,
+            )
+
             
             print(name_generator.function_name)

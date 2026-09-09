@@ -20,22 +20,17 @@ class Main:
         self.data = Parser()
         self.data.run()
 
+
+
+        
     def run_model(self) -> None:
         model = ManagerLLM()
-        generator_ids = []
-        prompt_ids = model.custom_encoder("fn_substitute_string_with_regex")
-        generator_ids = prompt_ids
-        # while True:
-
-        model.mask_logits(generator_ids, prompt_ids)
-        print(model.decode_token(numpy.argmax(prompt_ids)))
-        # generator = Generator(
-        #     prompts=self.data.get_prompts,
-        #     model=model,
-        #     functions_defintions=self.data.functions_def,
-        # )
-        # generator.run()
-
+        generator = Generator(
+            prompts=self.data.get_prompts,
+            model=model,
+            functions_defintions=self.data.functions_def,
+        )
+        generator.run()
 
 if __name__ == "__main__":
     try:
