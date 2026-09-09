@@ -1,9 +1,10 @@
 from src.llm_manager.generatermodel import ManagerLLM
 from src.trie import Trie
 from enum import Enum
+import numpy
 
 
-class PromptType(Enum, str):
+class PromptType(str, Enum):
     FUNCTION_NAME = """You are a precise function router.
 
 Task:
@@ -43,15 +44,21 @@ class FunctionNameGenerator:
 
     def generate(self) -> None:
         global_prompt: str = self.build_prompt()
-
         self.context_window_ids = self.model.custom_encoder(global_prompt)
         while True:
             high_scores: list[int] = self.trie.get_children(self.generated_ids)
+            if len(high_scores) == 0:
+                break
             logits: list[float] = self.model.mask_logits(
                 self.context_window_ids, high_scores
             )
+            next_token_id: int = int(numpy.argmax(logits))
+            next_token: str = self.model.decode([next_token_id])
+            self.context_window_ids.append(next_token_id)
+            self.generated_ids.append(next_token_id)
+            self.function_name += next_token
 
     def build_prompt(self) -> str:
         return PromptType.FUNCTION_NAME.replace(
             "{user_prompt}", self.user_prompt
-        ).replace("{functions_defintions}", self.functions_definitons_json)
+        )

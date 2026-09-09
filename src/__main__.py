@@ -22,10 +22,9 @@ class Main:
     def run_model(self) -> None:
         model = ManagerLLM()
         generator = Generator(
-            prompts=self.data.get_prompts(),
+            prompts=self.data.get_prompts,
             model=model,
             functions_defintions=self.data.functions_def,
-            functions_defintions_json=self.data.functions_defintions_json,
         )
         generator.run()
 

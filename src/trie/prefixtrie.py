@@ -29,10 +29,3 @@ class Trie:
     def insert_many(self, ids: list[list[int]]) -> None:
         for ids_row in ids:
             self.__insert(ids_row)
-
-
-if __name__ == "__main__":
-    ids: list[list[int]] = [[12, 434, 434, 5343], [12, 4343242, 4231231, 321321]]
-    trie: Trie = Trie()
-    trie.insert_many(ids)
-    print(trie.get_children([12, 333213, 32321]))

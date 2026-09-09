@@ -2,6 +2,7 @@ from src.custom_error import Call_Error
 from .schema import FunctionDefn, Prompt
 
 from typing import cast
+import sys
 
 from pydantic import ValidationError  # type: ignore[import-untyped, unused-ignore]
 from pathlib import Path
@@ -52,11 +53,10 @@ class ParserReadData:
             prompts = json.load(fd)
         return [Prompt(**prompt) for prompt in prompts]
 
-    def get_functions_definition(self, path: Path) -> tuple[str, list[FunctionDefn]]:
+    def get_functions_definition(self, path: Path) -> list[FunctionDefn]:
         with open(path, "r") as fd:
             function_defn: list = json.load(fd)
-            return fd.read(), [FunctionDefn(**fun) for fun in function_defn]
-
+        return [FunctionDefn(**fun) for fun in function_defn]
 
 class Parser:
     def __init__(self) -> None:
@@ -89,11 +89,10 @@ class Parser:
 
     def __set_functions_definition(self) -> None:
         try:
-            self.functions_defintions_json, self.__function_definition = (
+            self.__function_definition = (
                 self.__data.get_functions_definition(
-                    cast(Path, self.args.functions_definition)
-                )
-            )
+                    cast(Path, self.args.functions_definition))
+                    )
         except ValidationError as e:
             raise Call_Error(str(e))
 
@@ -103,6 +102,7 @@ class Parser:
         except ValidationError as e:
             print(e)
 
+    @property
     def get_prompts(self) -> list[Prompt]:
         return self.__prompts
 
