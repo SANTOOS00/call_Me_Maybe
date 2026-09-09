@@ -29,4 +29,5 @@ class Generator:
                 functions_definitions=self.functions_defintions
             )
             name_generator.generate()
+            
             print(name_generator.function_name)
