@@ -17,22 +17,14 @@ class Generator:
 
         self.prompts: list[Prompt] = prompts
         self.model: ManagerLLM = model
-        self.trie: Trie = Trie()
         self.functions_defintions: list[FunctionDefn] = functions_defintions
+        self.generater_fun_name: FunctionNameGenerator = FunctionNameGenerator(
+            model=self.model,
+            trie=Trie(),
+            functions_definitions=functions_defintions
+        )
 
     def run(self) -> None:
-        for prompt in self.prompts:
-            name_generator: FunctionNameGenerator = FunctionNameGenerator(
-                model=self.model,
-                user_prompt=prompt.prompt,
-                trie=self.trie,
-                functions_definitions=self.functions_defintions
-            )
-            name_generator.generate()
-            parameter_generater: ParameterGenerator = ParameterGenerator(
-                trie=self.trie,
-                functions_definitions=self.functiones_definition,
-            )
-
-            
-            print(name_generator.function_name)
+        for user_prompt in self.prompts:
+            functione_definition: FunctionNameGenerator = self.generater_fun_name.generate(user_prompt)
+            print(function_name)

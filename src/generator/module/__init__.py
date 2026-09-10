@@ -1,3 +1,4 @@
-from .function_name_generator import FunctionNameGenerator, ParameterGenerator
+from .function_name_generator import FunctionNameGenerator
+from .parameter_generator import ParameterGenerator 
 
-__all__ = ['FunctionNameGenerator']
+__all__ = ['ParameterGenerator', 'FunctionNameGenerator']

@@ -5,7 +5,7 @@ from enum import Enum
 import numpy # type: ignore[import-untyped, unused-ignore]
 
 
-class FewShotPrompt(str, Enum):
+class PromptProduct(Enum):
     FUNCTION_NAME = """You are a precise function router.
 
 Task:
@@ -32,22 +32,20 @@ class FunctionNameGenerator:
         self,
         model: ManagerLLM,
         trie: Trie,
-        user_prompt: str,
         functions_definitions: list[FunctionDefn]
     ) -> None:
         self.model: ManagerLLM = model
         self.trie: Trie = trie
-        self.user_prompt: str = user_prompt
-        self.functions_definitions = functions_definitions
+        self.functions_definitions: list(FunctionDefn) = functions_definitions
 
         self.context_window_ids: list[int]
         self.generated_ids: list[int] = list()
         self.function_name: str = str()
         
 
-    def generate(self) -> None:
+    def generate(self, user_prompt: str) -> None:
         self.set_functions_names_ids_to_trie()
-        global_prompt: str = self.build_prompt()
+        global_prompt: str = self.__build_prompt(user_prompt)
         self.context_window_ids = self.model.custom_encoder(global_prompt)
         while True:
             high_scores: list[int] = self.trie.get_children(self.generated_ids)
@@ -61,11 +59,18 @@ class FunctionNameGenerator:
             self.context_window_ids.append(next_token_id)
             self.generated_ids.append(next_token_id)
             self.function_name += next_token
-
-    def build_prompt(self) -> str:
-        return FewShotPrompt.FUNCTION_NAME.replace(
-            "{user_prompt}", self.user_prompt
+        return self.get_function_definition()
+    
+    def __get_function_definition(self) -> FunctionDefn:
+        
+        return (
+            fun_definition 
+            for fun_definiton in self.functions_definitions 
+            if fun_definition.name == self.function_name
         )
+
+    def __build_prompt(self, user_prompt: str) -> str:
+        return PromptProduct.FUNCTION_NAME.value
 
     
     def set_functions_names_ids_to_trie(self) -> None:
@@ -75,3 +80,5 @@ class FunctionNameGenerator:
             functions_names_ids.append(name_ids)
 
         self.trie.insert_many(functions_names_ids)
+
+
