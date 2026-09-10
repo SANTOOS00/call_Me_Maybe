@@ -28,7 +28,7 @@ class Main:
         generator = Generator(
             prompts=self.data.get_prompts,
             model=model,
-            functions_defintions=self.data.functions_def,
+            functions_definitions=self.data.functions_def,
         )
         generator.run()
 
