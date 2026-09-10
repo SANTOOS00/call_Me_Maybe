@@ -5,7 +5,7 @@ from enum import Enum
 import numpy # type: ignore[import-untyped, unused-ignore]
 
 
-class PromptProduct(Enum):
+class PromptProduct(str, Enum):
     FUNCTION_NAME = """You are a precise function router.
 
 Task:
@@ -43,7 +43,7 @@ class FunctionNameGenerator:
         self.function_name: str = str()
         
 
-    def generate(self, user_prompt: str) -> None:
+    def generate(self, user_prompt: str) -> str:
         self.set_functions_names_ids_to_trie()
         global_prompt: str = self.__build_prompt(user_prompt)
         self.context_window_ids = self.model.custom_encoder(global_prompt)
@@ -59,18 +59,24 @@ class FunctionNameGenerator:
             self.context_window_ids.append(next_token_id)
             self.generated_ids.append(next_token_id)
             self.function_name += next_token
-        return self.get_function_definition()
+        return self.__get_function_definition()
     
-    def __get_function_definition(self) -> FunctionDefn:
-        
-        return (
-            fun_definition 
-            for fun_definiton in self.functions_definitions 
-            if fun_definition.name == self.function_name
-        )
+    def __get_function_definition(self) -> str:
+        print(self.function_name)
+        return "hSSSS"
+        # for fun in self.functions_definitions:
+        #     if fun.name == self.function_name:
+        #         print(self)
+        # return (
+        #     fun_definition 
+        #     for fun_definiton in self.functions_definitions 
+        #     if fun_definition.name == self.function_name
+        # )
 
     def __build_prompt(self, user_prompt: str) -> str:
-        return PromptProduct.FUNCTION_NAME.value
+        return PromptProduct.FUNCTION_NAME.replace(
+            {user_prompt}, user_prompt
+        )
 
     
     def set_functions_names_ids_to_trie(self) -> None:

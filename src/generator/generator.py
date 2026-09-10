@@ -26,5 +26,5 @@ class Generator:
 
     def run(self) -> None:
         for user_prompt in self.prompts:
-            functione_definition: FunctionNameGenerator = self.generater_fun_name.generate(user_prompt)
-            print(function_name)
+            function: FunctionNameGenerator = self.generater_fun_name.generate(user_prompt=user_prompt)
+            print(type(function))
