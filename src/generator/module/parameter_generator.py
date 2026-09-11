@@ -22,18 +22,21 @@ class ParameterGenerator:
         self.context_window_ids: list[int]
 
     def generate(self, function_definition: FunctionDefn, prompt: str) -> Dict[str, int | str | bool]:
+        self.generater_valid_paramters: Dict[str, int | str | bool] = {}
         for name_arg, type_val in function_definition.parameters.items():
-            self.context_window_ids = self.model.custom_encoder(self.builder_prompt(
+            string = self.builder_prompt(
                 user_prompt=prompt,
                 function_name=function_definition.name,
                 parameter=name_arg,
                 description=function_definition.description,
-            ))
+            )
+            # print(string)
+            self.context_window_ids = self.model.custom_encoder(string)
             match type_val.type:
                 case "number":
                     self.generater_valid_paramters[name_arg] = self.__generater_numbers(float, prompt)
                 case "integer":
-                    self.generater_valid_paramters[name_arg] = self.__generater_numbers(int, prompt, name_arg)
+                    self.generater_valid_paramters[name_arg] = self.__generater_numbers(int, prompt)
                 # case "string":
             #         self.generater_valid_paramters[name_arg] = self.__generater_string(
             #             function_definition=function_definition,
@@ -49,15 +52,19 @@ class ParameterGenerator:
         token = str()
         while True:
             next_token_possible: list[int] | None = self.__git_tokens_possible(token)
-            if next_token_possible is None or len(token) > len(prompt):
-                break
             logits: list[int] = model.mask_logits(self.context_window_ids, next_token_possible)
-            token_id = numpy.argmax(logits)
+            token_id = int(numpy.argmax(logits))
             token_string = model.decode_token(token_id)
             self.context_window_ids.append(token_id)
             token += token_string
+            step = self.__get_step_generator_number(token)
+            if step == NumberFSM.End_step:
+                if "," in token:
+                    index = token.index(",")
+                    token = token[:index]
+                break
         print(token)
-        return token
+        return type(token)
         # print(token, flush=True, end="")
 
     def __git_tokens_possible(self, number: str) -> list[int] | None:
@@ -65,10 +72,10 @@ class ParameterGenerator:
         match step_generator:
             case NumberFSM.Start_step:
                 return self.model.encoder_chr_by_chr("+-1234567890")
-            case NumberFSM.Sing_step:
+            case NumberFSM.Sign_step:
                 return self.model.encoder_chr_by_chr("1234567890")
             case NumberFSM.Number_step:
-                return self.model.encoder_chr_by_chr("1234567890.,")
+                return self.model.encoder_chr_by_chr("1234567890,.")
             case NumberFSM.Decimal_step:
                 return self.model.encoder_chr_by_chr("1234567890,")
             case NumberFSM.End_step:
@@ -79,27 +86,26 @@ class ParameterGenerator:
         cont_decmal = 0
         cont_number = 0
         for nu in number:
-            match step_generator:
-                case NumberFSM.Sign_step:
+                if NumberFSM.Start_step == step_generator:
                     if nu in "-+":
                         step_generator = NumberFSM.Sign_step
                     else:
                         step_generator = NumberFSM.Number_step
-                case NumberFSM.Sign_step:
+                elif NumberFSM.Sign_step == step_generator:
                     step_generator = NumberFSM.Number_step
-                case NumberFSM.Number_step:
+                elif NumberFSM.Number_step == step_generator:
                     if nu == '.' and cont_number != 0:
                         step_generator = NumberFSM.Decimal_step
                     elif nu == ',' and cont_number != 0:
                         step_generator = NumberFSM.End_step
                     else:
                         cont_number += 1
-                case NumberFSM.Decimal_step:
+                elif NumberFSM.Decimal_step == step_generator:
                     if nu == ',' and cont_decmal != 0:
                         step_generator = NumberFSM.End_step
                     else:
                         cont_decmal += 1
-                case NumberFSM.End_step:
+                elif NumberFSM.End_step:
                     return step_generator
         return step_generator
     def __generater_string(self,
