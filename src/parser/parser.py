@@ -1,13 +1,10 @@
 from src.custom_error import Call_Error
 from .schema import FunctionDefn, Prompt
-
 from typing import cast
-import sys
+
 
 from pydantic import ValidationError  # type: ignore[import-untyped, unused-ignore]
 from pathlib import Path
-
-
 import argparse
 import json
 import os
@@ -24,26 +21,33 @@ class ParserArgs:
 
     def __parser_args(self) -> argparse.Namespace:
         self.__parser.add_argument(
-            "--functions_definition", "-f", type=Path, required=True
+            "--functions_definition",
+            "-f",
+            type=Path,
+            required=True
         )
-        self.__parser.add_argument("--output", "-o", type=Path, required=True)
+        self.__parser.add_argument(
+            "--output",
+            "-o",
+            type=Path,
+            required=True
+            )
         self.__parser.add_argument(
             "--input",
             "-i",
             type=Path,
             required=True,
         )
-
         return self.__parser.parse_args()
 
     def __valdate_paths(self, args: argparse.Namespace) -> None:
-        if not args.functions_definition.exists():
+        if not args.functions_definition.exists() or not args.functions_definition.exists():
             raise Call_Error(
                 "Functions definition file " f"not found: {args.functions_definition}"
             )
-        if not args.input.exists():
+        if not args.input.exists() or not args.input.exists():
             raise Call_Error(f"Input file not found: {args.input}")
-        if not args.output.exists():
+        if not args.output.exists() or not args.output.exists():
             raise Call_Error(f"output file not found: {args.output}")
 
 
@@ -58,13 +62,13 @@ class ParserReadData:
             function_defn: list = json.load(fd)
         return [FunctionDefn(**fun) for fun in function_defn]
 
+
 class Parser:
     def __init__(self) -> None:
         self.__function_definition: list[FunctionDefn]
         self.__prompts: list[Prompt]
         self.__data: ParserReadData
         self.args: argparse.Namespace
-        self.functions_defintions_json: str
 
     def run(self) -> None:
         self.__set_args()
@@ -83,6 +87,9 @@ class Parser:
             raise Call_Error("[ERROR]: Path does not existe")
         if not os.access(path, os.R_OK):
             raise Call_Error("[ERROR]: File is not readable")
+
+    def get_path_funcall_json(self) -> Path:
+        return self.args.output
 
     def __set_args(self) -> None:
         self.args = ParserArgs().run()

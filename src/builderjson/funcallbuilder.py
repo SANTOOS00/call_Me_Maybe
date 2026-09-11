@@ -1,25 +1,24 @@
+from pathlib import Path
 from typing import Dict
+from pydantic import BaseModel, TypeAdapter
 
 
-class FunCallBuilder:
-    def __init__(self) -> None:
-        self.name_function: str
-        self.prompt: str
-        self.paramiters: Dict[str, str]
+class FormatFunctionCalling(BaseModel):
+    prompt: str
+    name: str
+    parameters: Dict[str, str | int | float | bool]
 
-    def set_name_function(self, name: str) -> None:
-        self.name_function = name
 
-    def set_prompt(self, prompt: str) -> None:
-        self.prompt = prompt
+class ProductJson:
+    def __init__(self, functions_calling: list[FormatFunctionCalling] | None = None) -> None:
+        self.functions_calling = functions_calling or []
+        self.type_adapter = TypeAdapter(list[FormatFunctionCalling])
 
-    def set_paramiters(self, paramiters: Dict[str, str]) -> None:
-        self.paramiters = paramiters
+    def add_function(self, func: FormatFunctionCalling) -> None:
+        """Helper method bash t-zid function l l-list"""
+        self.functions_calling.append(func)
 
-    def prints(self) -> None:
-        print(self.name_function, flush=True)
-
-    def clean(self) -> None:
-        self.prompt = ""
-        self.name_function = ""
-        self.paramiters: Dict[str, str]
+    def write_in_file(self, path: Path) -> None:
+        with open(path, 'w', encoding='utf-8') as fb:
+            json_data = self.type_adapter.dump_json(self.functions_calling, indent=2).decode("utf-8")
+            fb.write(json_data)

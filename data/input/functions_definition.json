@@ -1,17 +1,5 @@
 [
   {
-    "name": "fn_reverse_string",
-    "description": "Reverse a string and return the reversed result.",
-    "parameters": {
-      "s": {
-        "type": "string"
-      }
-    },
-    "returns": {
-      "type": "string"
-    }
-  },
-  {
     "name": "fn_add_numbers",
     "description": "Add two numbers together and return their sum.",
     "parameters": {
@@ -29,15 +17,33 @@
   {
     "name": "fn_greet",
     "description": "Generate a greeting message for a person by name.",
-    "parameters": {"name": {"type": "string"}},
-    "returns": {"type": "string"}
+    "parameters": {
+      "name": {
+        "type": "string"
+      }
+    },
+    "returns": {
+      "type": "string"
+    }
+  },
+  {
+    "name": "fn_reverse_string",
+    "description": "Reverse a string and return the reversed result.",
+    "parameters": {
+      "s": {
+        "type": "string"
+      }
+    },
+    "returns": {
+      "type": "string"
+    }
   },
   {
     "name": "fn_get_square_root",
     "description": "Calculate the square root of a number.",
     "parameters": {
       "a": {
-        "type": "string"
+        "type": "number"
       }
     },
     "returns": {
@@ -53,7 +59,7 @@
       },
       "regex": {
         "type": "string"
-      },    
+      },
       "replacement": {
         "type": "string"
       }

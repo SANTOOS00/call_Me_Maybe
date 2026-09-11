@@ -20,9 +20,6 @@ class Main:
         self.data = Parser()
         self.data.run()
 
-
-
-        
     def run_model(self) -> None:
         model = ManagerLLM()
         generator = Generator(
@@ -30,7 +27,8 @@ class Main:
             model=model,
             functions_definitions=self.data.functions_def,
         )
-        generator.run()
+        generator.run(path=self.data.get_path_funcall_json())
+
 
 if __name__ == "__main__":
     try:

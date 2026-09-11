@@ -1,7 +1,9 @@
 from .module import FunctionNameGenerator, ParameterGenerator
 from ..parser import Prompt, FunctionDefn
 from ..llm_manager import ManagerLLM
-from ..trie import Trie
+from ..builderjson import FormatFunctionCalling, ProductJson
+from pathlib import Path
+
 
 from typing import Dict
 import sys
@@ -26,8 +28,10 @@ class Generator:
         self.generater_parameters: ParameterGenerator = ParameterGenerator(
             model=model
         )
+        self.productjson: ProductJson = ProductJson()
 
-    def run(self) -> None:
+
+    def run(self, path: Path) -> None:
         for user_prompt in self.prompts:
             function: FunctionDefn | None = \
             self.generater_fun_name.generate(user_prompt=user_prompt.prompt)
@@ -36,7 +40,12 @@ class Generator:
                 sys.exit(1)
             parameters: Dict[str, int | str | bool | float] = self.generater_parameters.generate(function_definition=function,
                                                                                                  prompt=user_prompt.prompt)
-            print("name function : ", function.name)
-            print("parameters function : ", parameters)
-            print("prompt user : ", user_prompt.prompt)
-            print("==================")
+            function_calling: FormatFunctionCalling = FormatFunctionCalling(
+                name=function.name,
+                prompt=user_prompt.prompt,
+                parameters=parameters
+            )
+            print(function_calling)
+            self.productjson.add_function(function_calling)
+            self.productjson.write_in_file(path)
+        # print(self.productjson.functions_calling)
