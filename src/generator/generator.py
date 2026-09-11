@@ -4,6 +4,7 @@ from ..llm_manager import ManagerLLM
 from ..trie import Trie
 
 from typing import Dict
+import sys
 import numpy as np  # type: ignore[import-untyped, unused-ignore]
 
 
@@ -32,7 +33,10 @@ class Generator:
             self.generater_fun_name.generate(user_prompt=user_prompt.prompt)
             if function is None:
                 print("is not function definition")
-            print(function.name)
-            parameters: Dict[str, int | str | bool] = self.generater_parameters.generate(
-                function, user_prompt.prompt)
-            # print(parameters)
+                sys.exit(1)
+            parameters: Dict[str, int | str | bool | float] = self.generater_parameters.generate(function_definition=function,
+                                                                                                 prompt=user_prompt.prompt)
+            print("name function : ", function.name)
+            print("parameters function : ", parameters)
+            print("prompt user : ", user_prompt.prompt)
+            print("==================")

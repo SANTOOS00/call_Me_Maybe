@@ -6,6 +6,11 @@ from typing import Dict, Literal, cast
 from enum import Enum, auto
 import numpy
 
+class StringFSM(Enum):
+    Start_step = auto()
+    Escape_step = auto()
+    Context_step = auto()
+    Fini_step = auto()
 
 
 class NumberFSM(Enum):
@@ -15,44 +20,44 @@ class NumberFSM(Enum):
     Number_step = auto()
     End_step = auto()
 
+
 class ParameterGenerator:
     def __init__(self, model: ManagerLLM) -> None:
         self.model: ManagerLLM = model
-        self.generater_valid_paramters: Dict[str, int | str | bool] = {}
+        self.generater_valid_paramters: Dict[str, int | str | bool | float] = {}
         self.context_window_ids: list[int]
 
-    def generate(self, function_definition: FunctionDefn, prompt: str) -> Dict[str, int | str | bool]:
-        self.generater_valid_paramters: Dict[str, int | str | bool] = {}
+    def generate(self, function_definition: FunctionDefn, prompt: str) -> Dict[str, int | str | bool | float]:
+        self.generater_valid_paramters: Dict[str, int | str | bool | float] = {}
         for name_arg, type_val in function_definition.parameters.items():
-            string = self.builder_prompt(
+            prompt_dymc = self.builder_prompt(
                 user_prompt=prompt,
                 function_name=function_definition.name,
                 parameter=name_arg,
                 description=function_definition.description,
             )
-            # print(string)
-            self.context_window_ids = self.model.custom_encoder(string)
+            self.context_window_ids = self.model.custom_encoder(prompt_dymc)
             match type_val.type:
                 case "number":
-                    self.generater_valid_paramters[name_arg] = self.__generater_numbers(float, prompt)
+                    self.generater_valid_paramters[name_arg] = self.__generater_numbers()
                 case "integer":
-                    self.generater_valid_paramters[name_arg] = self.__generater_numbers(int, prompt)
-                # case "string":
-            #         self.generater_valid_paramters[name_arg] = self.__generater_string(
-            #             function_definition=function_definition,
-            #             user_prompt=prompt)
+                    self.generater_valid_paramters[name_arg] = self.__generater_numbers()
+                case "string":
+                    self.generater_valid_paramters[name_arg] = self.__generater_string()
                 # case "boolean":
             #         pass
             #     case _:
             #         pass
         return self.generater_valid_paramters
 
-    def __generater_numbers(self, type: float | int, prompt: str) -> float:
+    def __generater_numbers(self) -> float:
         model = self.model
         token = str()
         while True:
-            next_token_possible: list[int] | None = self.__git_tokens_possible(token)
-            logits: list[int] = model.mask_logits(self.context_window_ids, next_token_possible)
+            next_token_possible: list[int] | None = self.__git_tokens_possible_number(token)
+            if next_token_possible is None:
+                break
+            logits: list[float] = model.mask_logits(self.context_window_ids, next_token_possible)
             token_id = int(numpy.argmax(logits))
             token_string = model.decode_token(token_id)
             self.context_window_ids.append(token_id)
@@ -63,11 +68,9 @@ class ParameterGenerator:
                     index = token.index(",")
                     token = token[:index]
                 break
-        print(token)
-        return type(token)
-        # print(token, flush=True, end="")
+        return float(token)
 
-    def __git_tokens_possible(self, number: str) -> list[int] | None:
+    def __git_tokens_possible_number(self, number: str) -> list[int] | None:
         step_generator = self.__get_step_generator_number(number)
         match step_generator:
             case NumberFSM.Start_step:
@@ -81,6 +84,46 @@ class ParameterGenerator:
             case NumberFSM.End_step:
                 return None
 
+    def __generater_string(self) -> str | int | float | bool:
+        model: ManagerLLM = self.model
+        token = str()
+        while True:
+            logits = model.get_logits(self.context_window_ids)
+            token_next_ids: int  = cast(int ,numpy.argmax(logits))
+            self.context_window_ids.append(token_next_ids)
+            token_string: str = model.decode_token(token_next_ids)
+            token += token_string
+            if self.__get_step_generator_string(token) == StringFSM.Fini_step:
+                if '"' in token:
+                    index = token.index('"')
+                    token = token[:index]
+                break
+        return token
+
+    def __get_step_generator_string(self, string: str) -> StringFSM:
+        step_generator: StringFSM = StringFSM.Start_step
+        for ch in string: 
+            if step_generator == StringFSM.Start_step:
+                if ch == "\\":
+                    step_generator = StringFSM.Escape_step
+                elif ch == '"':
+                    step_generator = StringFSM.Context_step
+                else:
+                    step_generator = StringFSM.Context_step
+
+            elif step_generator == StringFSM.Context_step:
+                if ch == "\\":
+                    step_generator = StringFSM.Escape_step
+                elif ch == '"':
+                    return StringFSM.Fini_step
+                else:
+                    step_generator = StringFSM.Context_step
+            elif step_generator == StringFSM.Escape_step:
+                step_generator = StringFSM.Context_step
+            elif step_generator == StringFSM.Fini_step:
+                return StringFSM.Fini_step
+        return step_generator
+    
     def __get_step_generator_number(self, number: str) -> NumberFSM:
         step_generator: NumberFSM = NumberFSM.Start_step
         cont_decmal = 0
@@ -108,27 +151,6 @@ class ParameterGenerator:
                 elif NumberFSM.End_step:
                     return step_generator
         return step_generator
-    def __generater_string(self,
-                           function_definition: FunctionDefn,
-                           user_prompt: str) -> str | int | float | bool:
-        # self.clean()
-        # model: ManagerLLM = self.model
-        # next_tokens = ""
-        # global_prompt: str = self.builder_prompt(
-        #     user_prompt=user_prompt,
-        #     description=function_definition.description,
-        #     function_name=function_definition.name
-        # )
-        
-        # self.context_window_ids = model.custom_encoder(global_prompt)
-        # token_prompt : list[int] = model.custom_encoder(user_prompt)
-        # while len(user_prompt) >= len(next_tokens):
-        #     logits = model.mask_logits(self.context_window_ids, token_prompt)
-        #     token_next_ids: int  = cast(int ,numpy.argmax(logits))
-        #     self.context_window_ids.append(token_next_ids)
-        #     token_str_next = model.decode_token(token_next_ids)
-        #     next_tokens += token_str_next
-        return 11
 
     def clean(self) -> None:
         self.context_window_ids: list[int] = list()

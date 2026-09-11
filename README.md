@@ -38,3 +38,4 @@ The `Small_LLM_Model` class encapsulates boilerplate code to provide a streamlin
 ```
 [Finite-state machine](https://en.wikipedia.org/wiki/Finite-state_machine)
 [Trie](https://www.geeksforgeeks.org/dsa/trie-insert-and-search/)
+[Constrained Decoding: Forcing LLMs to Respect Your Taxonomy](https://pub.towardsai.net/constrained-decoding-forcing-llms-to-respect-your-taxonomy-3aaaf13329f9)

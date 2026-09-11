@@ -30,7 +30,7 @@ class ManagerLLM(Small_LLM_Model):
                 logits[token_id] = float("-inf")
         return logits
     
-    @lru_cache(maxsize=10)
+    @lru_cache(maxsize=4)
     def encoder_chr_by_chr(self, prompt: str) -> list[int]:
         return [int(self.encode(token)) for token in prompt]
 
