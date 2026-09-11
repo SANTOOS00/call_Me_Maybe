@@ -21,7 +21,9 @@ class Generator:
             model=self.model,
             functions_definitions=functions_definitions
         )
-        self.generater_parameters: ParameterGenerator = ParameterGenerator()
+        self.generater_parameters: ParameterGenerator = ParameterGenerator(
+            model=model
+        )
 
     def run(self) -> None:
         for user_prompt in self.prompts:
@@ -29,7 +31,7 @@ class Generator:
             self.generater_fun_name.generate(user_prompt=user_prompt.prompt)
             if function is None:
                 print("is not function definition")
-
+            print(function.name)
             parameters: Dict[str, int | str | bool] = self.generater_parameters.generate(function, user_prompt.prompt)
         #     print(function.name)
         #     print(function.parameters)
