@@ -3,6 +3,7 @@ from ..parser import Prompt, FunctionDefn
 from ..llm_manager import ManagerLLM
 from ..trie import Trie
 
+from typing import Dict
 import numpy as np  # type: ignore[import-untyped, unused-ignore]
 
 
@@ -32,8 +33,5 @@ class Generator:
             if function is None:
                 print("is not function definition")
             print(function.name)
-            parameters: Dict[str, int | str | bool] = self.generater_parameters.generate(function, user_prompt.prompt)
-        #     print(function.name)
-        #     print(function.parameters)
-        #     print(user_prompt.prompt)
-        #     print(function.description)
+            parameters: Dict[str, int | str | bool] = self.generater_parameters.generate(
+                function, user_prompt.prompt)

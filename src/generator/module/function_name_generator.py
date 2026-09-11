@@ -13,7 +13,7 @@ class FunctionNameGenerator:
     ) -> None:
         self.model: ManagerLLM = model
         self.trie: Trie = Trie()
-        self.functions_definitions: list(FunctionDefn) = functions_definitions
+        self.functions_definitions: list[FunctionDefn] = functions_definitions
 
         self.context_window_ids: list[int]
         self.generated_ids: list[int] = list()
