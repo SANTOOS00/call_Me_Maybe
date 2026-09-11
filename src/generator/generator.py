@@ -35,3 +35,4 @@ class Generator:
             print(function.name)
             parameters: Dict[str, int | str | bool] = self.generater_parameters.generate(
                 function, user_prompt.prompt)
+            # print(parameters)
