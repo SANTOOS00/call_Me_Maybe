@@ -89,14 +89,16 @@ class ParameterGenerator:
                     step_generator = NumberFSM.Number_step
                 case NumberFSM.Number_step:
                     if nu == '.' and cont_number != 0:
-                        step_generater = NumberFSM.Decimal_step
+                        step_generator = NumberFSM.Decimal_step
                     elif nu == ',' and cont_number != 0:
-                        step_generater = NumberFSM.End_step
-                    cont_number += 1
+                        step_generator = NumberFSM.End_step
+                    else:
+                        cont_number += 1
                 case NumberFSM.Decimal_step:
                     if nu == ',' and cont_decmal != 0:
                         step_generator = NumberFSM.End_step
-                    cont_decmal += 1
+                    else:
+                        cont_decmal += 1
                 case NumberFSM.End_step:
                     return step_generator
         return step_generator
