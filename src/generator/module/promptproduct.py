@@ -17,7 +17,6 @@ Examples:
 Answer: {
     "prompt": "{user_prompt}",
     "function_name": \""""
-
     PARAMETER = """
 Task:
 Analyze the user request, identify the target function, and extract its parameters.

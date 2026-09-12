@@ -26,17 +26,16 @@ class ParameterGenerator:
         self.model: ManagerLLM = model
         self.generater_valid_paramters: Dict[str, int | str | bool | float] = {}
         self.context_window_ids: list[int]
-        self.token_id: list[int]
 
     def generate(self, function_definition: FunctionDefn, prompt: str) -> Dict[str, int | str | bool | float]:
         self.generater_valid_paramters: Dict[str, int | str | bool | float] = {}
         for name_arg, type_val in function_definition.parameters.items():
             prompt_dymc = self.builder_prompt(
                 user_prompt=prompt,
+                function_name=function_definition.name,
                 parameter=name_arg,
-                function_definition=function_definition
+                description=function_definition.description,
             )
-            self.token_id = self.model.custom_encoder(prompt)
             self.context_window_ids = self.model.custom_encoder(prompt_dymc)
             match type_val.type:
                 case "number":
@@ -87,10 +86,9 @@ class ParameterGenerator:
 
     def __generater_string(self) -> str | int | float | bool:
         model: ManagerLLM = self.model
-        
         token = str()
         while True:
-            logits = model.mask_logits(self.context_window_ids, self.token_id)
+            logits = model.get_logits(self.context_window_ids)
             token_next_ids: int  = cast(int ,numpy.argmax(logits))
             self.context_window_ids.append(token_next_ids)
             token_string: str = model.decode_token(token_next_ids)
@@ -159,18 +157,19 @@ class ParameterGenerator:
 
     def builder_prompt(self,
                        user_prompt: str,
+                       description: str,
                        parameter: str,
-                       function_definition: FunctionDefn) -> str:
+                       function_name: str) -> str:
         param_str = "{"
         for key, val in self.generater_valid_paramters.items():
             param_str += f"'{key}': {val}, "
         param_str += f"'{parameter}':"
         return PromptProduct.PARAMETER.replace(
-            "{function_name}", function_definition.name
+            "{function_name}", function_name
+        )   .replace(
+            "{user_prompt}", user_prompt,  
         ).replace(
-            "{user_prompt}", user_prompt,
-        ).replace(
-            "{description_method}", function_definition.description
+            "{description_method}", description
         ).replace(
             "{parameter}", param_str
         )
