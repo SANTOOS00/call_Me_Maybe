@@ -17,20 +17,36 @@ Examples:
 Answer: {
     "prompt": "{user_prompt}",
     "function_name": \""""
-    PARAMETER = """
-Task:
-Analyze the user request, identify the target function, and extract its parameters.
+    PARAMERTER_GEMERATER ="""
+- You are an AI assistant designed for system integration and automated function calling.
+- Your sole task is to analyze the user's request and extract the necessary arguments defined in
+    the provided function interface.
 
-Examples:
+# Available Function:
+- User Prompt: {USER_PROMPT}
+- Function Name: {FUNCTION_NAME}
+- Description: {FUNCTION_DESCRIPTION}
+- Available Parameters and Types:
+{FUNCTION_PARAMETERS_LIST}
+
+# Strictly Allowed Parameter Types:
+1. string: Text wrapped in double quotes (e.g., "example").
+2. int: Integer numbers without decimals or quotes (e.g., 42).
+3. float: Floating-point numbers without quotes (e.g., 3.14).
+4. bool: Boolean values without quotes (true or false).
+
+EXAMPLE:
     Answer: {
-        "function": "fn_get_weather_forecast",
-        "prompt": "Weather in Casablanca for 3 days",
-        "description": "Fetch weather",
-        "parameters": {"city": "Casablanca", "days": 3}
-    }
-
+        "User Prompt": Replace all vowels in 'Programming is fun' with asterisks,
+        "Function name": fn_substitute_string_with_regex,
+        "Description": Replace all occurrences matching a regex pattern in a string.,
+        "Parameters": {
+        "source_string": "Programming is fun",
+        "regex": "aeiouAEIOU",
+        "replacement": "*"
+        }
 Answer: {
-    "function": "{function_name}",
-    "prompt": "{user_prompt}",
-    "description": "{description_method}",
-    "parameters": {parameter} \""""
+    "User Prompt": {USER_PROMPT},
+    "Function Name": {FUNCTION_NAME},
+    "Description": {FUNCTION_DESCRIPTION},
+    "Parameters": {PARAMERTS}"""

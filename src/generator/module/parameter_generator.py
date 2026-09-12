@@ -30,20 +30,19 @@ class ParameterGenerator:
     def generate(self, function_definition: FunctionDefn, prompt: str) -> Dict[str, int | str | bool | float]:
         self.generater_valid_paramters: Dict[str, int | str | bool | float] = {}
         for name_arg, type_val in function_definition.parameters.items():
-            prompt_dymc = self.builder_prompt(
+            prompt_gengerater_parameters = self.builder_prompt(
                 user_prompt=prompt,
-                function_name=function_definition.name,
-                parameter=name_arg,
-                description=function_definition.description,
+                function_definition=function_definition
             )
-            self.context_window_ids = self.model.custom_encoder(prompt_dymc)
-            match type_val.type:
-                case "number":
-                    self.generater_valid_paramters[name_arg] = self.__generater_numbers()
-                case "integer":
-                    self.generater_valid_paramters[name_arg] = self.__generater_numbers()
-                case "string":
-                    self.generater_valid_paramters[name_arg] = self.__generater_string()
+            print(prompt_gengerater_parameters)
+            # self.context_window_ids = self.model.custom_encoder(prompt_gengerater_parameters)
+            # match type_val.type:
+            #     case "number":
+            #         self.generater_valid_paramters[name_arg] = self.__generater_numbers()
+            #     case "integer":
+            #         self.generater_valid_paramters[name_arg] = self.__generater_numbers()
+            #     case "string":
+            #         self.generater_valid_paramters[name_arg] = self.__generater_string()
                 # case "boolean":
             #         pass
             #     case _:
@@ -157,19 +156,7 @@ class ParameterGenerator:
 
     def builder_prompt(self,
                        user_prompt: str,
-                       description: str,
-                       parameter: str,
-                       function_name: str) -> str:
-        param_str = "{"
-        for key, val in self.generater_valid_paramters.items():
-            param_str += f"'{key}': {val}, "
-        param_str += f"'{parameter}':"
-        return PromptProduct.PARAMETER.replace(
-            "{function_name}", function_name
-        )   .replace(
-            "{user_prompt}", user_prompt,  
-        ).replace(
-            "{description_method}", description
-        ).replace(
-            "{parameter}", param_str
+                       function_definition: FunctionDefn) -> str:
+        return PromptProduct.PARAMERTER_GEMERATER.replace(
+            "{USER_PROMPT}", user_prompt
         )
