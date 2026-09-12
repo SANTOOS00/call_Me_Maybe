@@ -5,7 +5,7 @@ class PromptProduct(str, Enum):
     FUNCTION_NAME = """You are a precise function router.
 
 Task:
-Analyze the USER PROMPT and select the single most appropriate function from the AVAILABLE FUNCTIONS list.
+Analyze the USER PROMPT and select the single most appropriate function from the AVAILABLE FUNCTIONS.
 
 Examples: 
     Answer: {
@@ -17,36 +17,29 @@ Examples:
 Answer: {
     "prompt": "{user_prompt}",
     "function_name": \""""
+
+
     PARAMERTER_GEMERATER ="""
 - You are an AI assistant designed for system integration and automated function calling.
-- Your sole task is to analyze the user's request and extract the necessary arguments defined in
-    the provided function interface.
-
-# Available Function:
-- User Prompt: {USER_PROMPT}
-- Function Name: {FUNCTION_NAME}
-- Description: {FUNCTION_DESCRIPTION}
-- Available Parameters and Types:
-{FUNCTION_PARAMETERS_LIST}
-
-# Strictly Allowed Parameter Types:
-1. string: Text wrapped in double quotes (e.g., "example").
-2. int: Integer numbers without decimals or quotes (e.g., 42).
-3. float: Floating-point numbers without quotes (e.g., 3.14).
-4. bool: Boolean values without quotes (true or false).
 
 EXAMPLE:
-    Answer: {
-        "User Prompt": Replace all vowels in 'Programming is fun' with asterisks,
-        "Function name": fn_substitute_string_with_regex,
-        "Description": Replace all occurrences matching a regex pattern in a string.,
-        "Parameters": {
-        "source_string": "Programming is fun",
-        "regex": "aeiouAEIOU",
-        "replacement": "*"
+    ouput: {
+        "User Prompt": "Replace all vowels in 'Programming is fun' with asterisks",
+        "Function Name": "fn_substitute_string_with_regex",
+        "Available Parameters and Types": ("source_string": "string", "regex": "string", "replacement": "string")
+        "Description": "Replace all occurrences matching a regex pattern in a string.",
+        "Parameters": ("source_string": "Programming is fun", "regex": "aeiouAEIOU", "replacement": "*")
+        ,
+        {
+        "User Prompt": "Greet shrek",
+        "Function Name": "fn_greet",
+        "Available Parameters and Types": ("name": "string")
+        "Description": "Generate a greeting message for a person by name."
+        "Parameters": ("name": "shrek")
         }
 Answer: {
-    "User Prompt": {USER_PROMPT},
-    "Function Name": {FUNCTION_NAME},
-    "Description": {FUNCTION_DESCRIPTION},
-    "Parameters": {PARAMERTS}"""
+    "User Prompt": "{USER_PROMPT}",
+    "Function Name": "{FUNCTION_NAME}",
+    "Available Parameters and Types": {FUNCTION_PARAMETERS_LIST}
+    "Description": "{FUNCTION_DESCRIPTION}",
+    "Parameters": {PARAMETERS}"""   

@@ -39,3 +39,15 @@ The `Small_LLM_Model` class encapsulates boilerplate code to provide a streamlin
 [Finite-state machine](https://en.wikipedia.org/wiki/Finite-state_machine)
 [Trie](https://www.geeksforgeeks.org/dsa/trie-insert-and-search/)
 [Constrained Decoding: Forcing LLMs to Respect Your Taxonomy](https://pub.towardsai.net/constrained-decoding-forcing-llms-to-respect-your-taxonomy-3aaaf13329f9)
+
+
+SPECIAL CASES
+- Duplicate keys (functions_defintions)
+- Duplicate prompt (functions_calling_tests)
+- Empty prompt
+- Empty parameters (functions_defintions)
+- Invalid JSON
+- Ambigious prompts
+- Handle Hallucination of the model
+- wrong types
+- multiple parameters (eg: not valid functions_definition)

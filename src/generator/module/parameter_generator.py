@@ -24,34 +24,37 @@ class NumberFSM(Enum):
 class ParameterGenerator:
     def __init__(self, model: ManagerLLM) -> None:
         self.model: ManagerLLM = model
-        self.generater_valid_paramters: Dict[str, int | str | bool | float] = {}
+        self.valid_paramters: Dict[str, int | str | bool | float] = {}
         self.context_window_ids: list[int]
 
     def generate(self, function_definition: FunctionDefn, prompt: str) -> Dict[str, int | str | bool | float]:
-        self.generater_valid_paramters: Dict[str, int | str | bool | float] = {}
+        self.valid_paramters: Dict[str, int | str | bool | float] = {}
         for name_arg, type_val in function_definition.parameters.items():
+            # parameters = self.builder_parameters(self.generater_valid_paramters, name_arg)
+            # print(parameters)
             prompt_gengerater_parameters = self.builder_prompt(
                 user_prompt=prompt,
                 function_definition=function_definition
             )
-            print(prompt_gengerater_parameters)
-            # self.context_window_ids = self.model.custom_encoder(prompt_gengerater_parameters)
-            # match type_val.type:
-            #     case "number":
-            #         self.generater_valid_paramters[name_arg] = self.__generater_numbers()
-            #     case "integer":
-            #         self.generater_valid_paramters[name_arg] = self.__generater_numbers()
-            #     case "string":
-            #         self.generater_valid_paramters[name_arg] = self.__generater_string()
+            # print(prompt_gengerater_parameters)
+            self.context_window_ids = self.model.custom_encoder(prompt_gengerater_parameters)
+            match type_val.type:
+                case "number":
+                    self.valid_paramters[name_arg] = self.__generater_numbers(name_arg)
+                case "integer":
+                    self.valid_paramters[name_arg] = self.__generater_numbers(name_arg)
+                case "string":
+                    self.valid_paramters[name_arg] = self.__generater_string(name_arg)
                 # case "boolean":
             #         pass
             #     case _:
             #         pass
-        return self.generater_valid_paramters
+        return self.valid_paramters
 
-    def __generater_numbers(self) -> float:
-        model = self.model
+    def __generater_numbers(self, name_arg: str) -> float:
+        model: ManagerLLM = self.model
         token = str()
+        self.context_window_ids += model.custom_encoder(f"{name_arg}: ")
         while True:
             next_token_possible: list[int] | None = self.__git_tokens_possible_number(token)
             if next_token_possible is None:
@@ -61,6 +64,7 @@ class ParameterGenerator:
             token_string = model.decode_token(token_id)
             self.context_window_ids.append(token_id)
             token += token_string
+            print(token)
             step = self.__get_step_generator_number(token)
             if step == NumberFSM.End_step:
                 if "," in token:
@@ -68,6 +72,24 @@ class ParameterGenerator:
                     token = token[:index]
                 break
         return float(token)
+
+    def __generater_string(self, name_arg: str) -> str:
+        model: ManagerLLM = self.model
+        token = str()
+        self.context_window_ids += model.custom_encoder(f"{name_arg}: ")
+        while True:
+            logits = model.get_logits(self.context_window_ids)
+            token_next_ids: int  = cast(int ,numpy.argmax(logits))
+            self.context_window_ids.append(token_next_ids)
+            token_string: str = model.decode_token(token_next_ids)
+            token += token_string
+            print(token)
+            if self.__get_step_generator_string(token) == StringFSM.Fini_step:
+                if '"' in token:
+                    index = token.rfind('"')
+                    token = token[:index]
+                break
+        return token
 
     def __git_tokens_possible_number(self, number: str) -> list[int] | None:
         step_generator = self.__get_step_generator_number(number)
@@ -83,24 +105,9 @@ class ParameterGenerator:
             case NumberFSM.End_step:
                 return None
 
-    def __generater_string(self) -> str | int | float | bool:
-        model: ManagerLLM = self.model
-        token = str()
-        while True:
-            logits = model.get_logits(self.context_window_ids)
-            token_next_ids: int  = cast(int ,numpy.argmax(logits))
-            self.context_window_ids.append(token_next_ids)
-            token_string: str = model.decode_token(token_next_ids)
-            token += token_string
-            if self.__get_step_generator_string(token) == StringFSM.Fini_step:
-                if '"' in token:
-                    index = token.index('"')
-                    token = token[:index]
-                break
-        return token
-
     def __get_step_generator_string(self, string: str) -> StringFSM:
         step_generator: StringFSM = StringFSM.Start_step
+        conut_char = 0
         for ch in string: 
             if step_generator == StringFSM.Start_step:
                 if ch == "\\":
@@ -114,7 +121,10 @@ class ParameterGenerator:
                 if ch == "\\":
                     step_generator = StringFSM.Escape_step
                 elif ch == '"':
-                    return StringFSM.Fini_step
+                    if conut_char:
+                        return StringFSM.Fini_step
+                    else:
+                        conut_char += 1
                 else:
                     step_generator = StringFSM.Context_step
             elif step_generator == StringFSM.Escape_step:
@@ -156,7 +166,22 @@ class ParameterGenerator:
 
     def builder_prompt(self,
                        user_prompt: str,
-                       function_definition: FunctionDefn) -> str:
+                       function_definition: FunctionDefn
+                       ) -> str:
+        formatted_params = ", ".join([f"{key}: {val.type}"
+                                      for key, val in
+                                      function_definition.parameters.items()])
+        format_param_generater = ", ".join(f"{key}: {val}" for key, val in self.valid_paramters.items())
+        if format_param_generater:
+            format_param_generater += ','
         return PromptProduct.PARAMERTER_GEMERATER.replace(
             "{USER_PROMPT}", user_prompt
+        ).replace(
+            "{FUNCTION_NAME}", function_definition.name
+        ).replace(
+            "{FUNCTION_DESCRIPTION}", function_definition.description 
+        ).replace(
+            "{FUNCTION_PARAMETERS_LIST}", f"({formatted_params})"
+        ).replace(
+            "{PARAMETERS}", f"({format_param_generater}"
         )
