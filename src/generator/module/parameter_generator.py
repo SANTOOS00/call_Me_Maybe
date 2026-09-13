@@ -77,13 +77,14 @@ class ParameterGenerator:
     def __generater_string(self, name_arg: str) -> str:
         model: ManagerLLM = self.model
         token = str()
-        self.context_window_ids += model.custom_encoder(f"{name_arg}: ")
+        self.context_window_ids += model.custom_encoder(f"{name_arg}:")
         while True:
             logits = model.get_logits(self.context_window_ids)
             token_next_ids: int  = cast(int ,numpy.argmax(logits))
             self.context_window_ids.append(token_next_ids)
             token_string: str = model.decode_token(token_next_ids)
             token += token_string
+            print(token)
             if self.__get_step_generator_string(token) == StringFSM.Fini_step:
                 if '"' in token:
                     index = token.rfind('"')
@@ -95,7 +96,7 @@ class ParameterGenerator:
         step_generator = self.__get_step_generator_number(number)
         match step_generator:
             case NumberFSM.Start_step:
-                return self.model.encoder_chr_by_chr("+-1234567890")
+                return self.model.encoder_chr_by_chr("-+1234567890")
             case NumberFSM.Sign_step:
                 return self.model.encoder_chr_by_chr("1234567890")
             case NumberFSM.Number_step:
@@ -106,6 +107,7 @@ class ParameterGenerator:
                 return None
 
     def __get_step_generator_string(self, string: str) -> StringFSM:
+        
         step_generator: StringFSM = StringFSM.Start_step
         conut_char = 0
         for ch in string:
@@ -118,22 +120,20 @@ class ParameterGenerator:
                 case StringFSM.Context_step:
                     if ch == "\\":
                         step_generator = StringFSM.Escape_step
-                    elif ch == '"':
-                        if conut_char:
-                            return StringFSM.Fini_step
-                        else:
-                            conut_char += 1
+                    elif ch == '"' and conut_char:
+                        return StringFSM.Fini_step
                     else:
-                        step_generator = StringFSM.Context_step
+                        conut_char += 1
                 case StringFSM.Escape_step:
-                    if ch != '\\':
-                        step_generator = StringFSM.Context_step
+                    step_generator = StringFSM.Context_step
                 case StringFSM.Fini_step:
                     return StringFSM.Fini_step
         return step_generator
     
     def __get_step_generator_number(self, number: str) -> NumberFSM:
         step_generator: NumberFSM = NumberFSM.Start_step
+        cont_decmal = 0
+        cont_number = 0
         for nu in number:
             match step_generator:
                 case NumberFSM.Start_step:
@@ -144,15 +144,19 @@ class ParameterGenerator:
                 case NumberFSM.Sign_step:
                     step_generator = NumberFSM.Number_step
                 case NumberFSM.Number_step:
-                    if nu == '.':
+                    if nu == '.' and cont_number != 0:
                         step_generator = NumberFSM.Decimal_step
                     elif nu == ',':
-                        step_generator = NumberFSM.End_step
+                        return NumberFSM.End_step
+                    else:
+                        cont_number += 1
                 case NumberFSM.Decimal_step:
-                    if nu == ',':
-                        step_generator = NumberFSM.End_step
+                    if nu == ',' and cont_decmal:
+                        return NumberFSM.End_step
+                    cont_decmal += 1
                 case NumberFSM.End_step:
                     return step_generator
+        print(step_generator, number)
         return step_generator
 
     def clean(self) -> None:
@@ -168,14 +172,12 @@ class ParameterGenerator:
         format_param_generater = ", ".join(f"{key}: {val}" for key, val in self.valid_paramters.items())
         if format_param_generater:
             format_param_generater += ','
-        return PromptProduct.PARAMERTER_GEMERATER.replace(
+        return PromptProduct.PARAMERTER_GENERATER.replace(
             "{USER_PROMPT}", user_prompt
         ).replace(
             "{FUNCTION_NAME}", function_definition.name
         ).replace(
-            "{FUNCTION_DESCRIPTION}", function_definition.description 
-        ).replace(
-            "{FUNCTION_PARAMETERS_LIST}", f"{formatted_params})"
-        ).replace(
             "{PARAMETERS}", f"{format_param_generater}"
+        ).replace(
+            "{PARAMETERS_SCHEMA}", format_param_generater
         )

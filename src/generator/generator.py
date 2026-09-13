@@ -38,7 +38,7 @@ class Generator:
                 sys.exit(1)
             parameters: Dict[str, int | str | bool | float] = self.generater_parameters.generate(function_definition=function,
                                                                                                  prompt=user_prompt.prompt)
-            self.__valid_parameters(parameters)
+            # self.__valid_parameters(parameters)
             function_calling: FormatFunctionCalling = FormatFunctionCalling(
                 name=function.name,
                 prompt=user_prompt.prompt,
