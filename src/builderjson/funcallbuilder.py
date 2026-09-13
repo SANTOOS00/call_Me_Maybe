@@ -15,7 +15,6 @@ class ProductJson:
         self.type_adapter = TypeAdapter(list[FormatFunctionCalling])
 
     def add_function(self, func: FormatFunctionCalling) -> None:
-        """Helper method bash t-zid function l l-list"""
         self.functions_calling.append(func)
 
     def write_in_file(self, path: Path) -> None:

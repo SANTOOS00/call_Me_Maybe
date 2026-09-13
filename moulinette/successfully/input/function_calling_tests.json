@@ -1,0 +1,43 @@
+[
+  {
+    "prompt": "What is the sum of 2 and 3?",
+    "name": "fn_calculate_compound_interest",
+    "parameters": {
+      "principal": 2.0,
+      "rate": 0.05,
+      "years": 2.0
+    }
+  },
+  {
+    "prompt": "What is the sum of 265 and 345?",
+    "name": "fn_multiply_numbers",
+    "parameters": {
+      "a": 265.0,
+      "b": 345.0
+    }
+  },
+  {
+    "prompt": "Greet shrek",
+    "name": "fn_read_file",
+    "parameters": {
+      "path": "C:\\\\Users\\\\Shrek\\\\Documents\\\\file.txt",
+      "encoding": "utf-8"
+    }
+  },
+  {
+    "prompt": "Greet john",
+    "name": "fn_read_file",
+    "parameters": {
+      "path": "C:\\\\Users\\\\John\\\\Documents\\\\file.txt",
+      "encoding": "utf-8"
+    }
+  },
+  {
+    "prompt": "Reverse the string 'hello'",
+    "name": "fn_multiply_numbers",
+    "parameters": {
+      "a": 5.0,
+      "b": 3.0
+    }
+  }
+]

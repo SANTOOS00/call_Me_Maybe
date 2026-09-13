@@ -51,3 +51,4 @@ SPECIAL CASES
 - Handle Hallucination of the model
 - wrong types
 - multiple parameters (eg: not valid functions_definition)
+- name function

@@ -33,32 +33,3 @@ class ManagerLLM(Small_LLM_Model):
     @lru_cache(maxsize=4)
     def encoder_chr_by_chr(self, prompt: str) -> list[int]:
         return [int(self.encode(token)) for token in prompt]
-
-#    def __get_number_state(self, number: str) -> NumberState:
-#         current_state: NumberState = NumberState.START
-#         integer_counter: int = 0
-#         decimal_counter: int = 0
-#         for n in number:
-#             match current_state:
-#                 case NumberState.START:
-#                     if n in "+-":
-#                         current_state = NumberState.SIGN
-#                     else:
-#                         current_state = NumberState.INTEGER
-#                 case NumberState.SIGN:
-#                     current_state = NumberState.INTEGER
-#                 case NumberState.INTEGER:
-#                     if integer_counter != 0 and n == ".":
-#                         current_state = NumberState.DECIMAL
-#                     elif integer_counter != 0 and n == ",":
-#                         current_state = NumberState.END
-#                     else:
-#                         integer_counter += 1
-#                 case NumberState.DECIMAL:
-#                     if decimal_counter != 0 and n == ",":
-#                         current_state = NumberState.END
-#                     else:
-#                         decimal_counter += 1
-#                 case NumberState.END:
-#                     return current_state
-#         return current_state

@@ -26,6 +26,7 @@ class ParameterGenerator:
         self.model: ManagerLLM = model
         self.valid_paramters: Dict[str, int | str | bool | float] = {}
         self.context_window_ids: list[int]
+        self.token: str
 
     def generate(self, function_definition: FunctionDefn, prompt: str) -> Dict[str, int | str | bool | float]:
         self.valid_paramters: Dict[str, int | str | bool | float] = {}
@@ -36,6 +37,7 @@ class ParameterGenerator:
                 user_prompt=prompt,
                 function_definition=function_definition
             )
+            self.token = str()
             # print(prompt_gengerater_parameters)
             self.context_window_ids = self.model.custom_encoder(prompt_gengerater_parameters)
             match type_val.type:
@@ -45,10 +47,10 @@ class ParameterGenerator:
                     self.valid_paramters[name_arg] = self.__generater_numbers(name_arg)
                 case "string":
                     self.valid_paramters[name_arg] = self.__generater_string(name_arg)
-                # case "boolean":
-            #         pass
-            #     case _:
-            #         pass
+                case "boolean":
+                    pass
+                case _:
+                    pass
         return self.valid_paramters
 
     def __generater_numbers(self, name_arg: str) -> float:
@@ -64,7 +66,6 @@ class ParameterGenerator:
             token_string = model.decode_token(token_id)
             self.context_window_ids.append(token_id)
             token += token_string
-            print(token)
             step = self.__get_step_generator_number(token)
             if step == NumberFSM.End_step:
                 if "," in token:
@@ -83,7 +84,6 @@ class ParameterGenerator:
             self.context_window_ids.append(token_next_ids)
             token_string: str = model.decode_token(token_next_ids)
             token += token_string
-            print(token)
             if self.__get_step_generator_string(token) == StringFSM.Fini_step:
                 if '"' in token:
                     index = token.rfind('"')
@@ -108,56 +108,50 @@ class ParameterGenerator:
     def __get_step_generator_string(self, string: str) -> StringFSM:
         step_generator: StringFSM = StringFSM.Start_step
         conut_char = 0
-        for ch in string: 
-            if step_generator == StringFSM.Start_step:
-                if ch == "\\":
-                    step_generator = StringFSM.Escape_step
-                elif ch == '"':
-                    step_generator = StringFSM.Context_step
-                else:
-                    step_generator = StringFSM.Context_step
-
-            elif step_generator == StringFSM.Context_step:
-                if ch == "\\":
-                    step_generator = StringFSM.Escape_step
-                elif ch == '"':
-                    if conut_char:
-                        return StringFSM.Fini_step
+        for ch in string:
+            match step_generator:
+                case StringFSM.Start_step:
+                    if ch == "\\":
+                        step_generator = StringFSM.Escape_step
                     else:
-                        conut_char += 1
-                else:
-                    step_generator = StringFSM.Context_step
-            elif step_generator == StringFSM.Escape_step:
-                step_generator = StringFSM.Context_step
-            elif step_generator == StringFSM.Fini_step:
-                return StringFSM.Fini_step
+                        step_generator = StringFSM.Context_step
+                case StringFSM.Context_step:
+                    if ch == "\\":
+                        step_generator = StringFSM.Escape_step
+                    elif ch == '"':
+                        if conut_char:
+                            return StringFSM.Fini_step
+                        else:
+                            conut_char += 1
+                    else:
+                        step_generator = StringFSM.Context_step
+                case StringFSM.Escape_step:
+                    if ch != '\\':
+                        step_generator = StringFSM.Context_step
+                case StringFSM.Fini_step:
+                    return StringFSM.Fini_step
         return step_generator
     
     def __get_step_generator_number(self, number: str) -> NumberFSM:
         step_generator: NumberFSM = NumberFSM.Start_step
-        cont_decmal = 0
-        cont_number = 0
         for nu in number:
-                if NumberFSM.Start_step == step_generator:
+            match step_generator:
+                case NumberFSM.Start_step:
                     if nu in "-+":
                         step_generator = NumberFSM.Sign_step
                     else:
                         step_generator = NumberFSM.Number_step
-                elif NumberFSM.Sign_step == step_generator:
+                case NumberFSM.Sign_step:
                     step_generator = NumberFSM.Number_step
-                elif NumberFSM.Number_step == step_generator:
-                    if nu == '.' and cont_number != 0:
+                case NumberFSM.Number_step:
+                    if nu == '.':
                         step_generator = NumberFSM.Decimal_step
-                    elif nu == ',' and cont_number != 0:
+                    elif nu == ',':
                         step_generator = NumberFSM.End_step
-                    else:
-                        cont_number += 1
-                elif NumberFSM.Decimal_step == step_generator:
-                    if nu == ',' and cont_decmal != 0:
+                case NumberFSM.Decimal_step:
+                    if nu == ',':
                         step_generator = NumberFSM.End_step
-                    else:
-                        cont_decmal += 1
-                elif NumberFSM.End_step:
+                case NumberFSM.End_step:
                     return step_generator
         return step_generator
 
@@ -181,7 +175,7 @@ class ParameterGenerator:
         ).replace(
             "{FUNCTION_DESCRIPTION}", function_definition.description 
         ).replace(
-            "{FUNCTION_PARAMETERS_LIST}", f"({formatted_params})"
+            "{FUNCTION_PARAMETERS_LIST}", f"{formatted_params})"
         ).replace(
-            "{PARAMETERS}", f"({format_param_generater}"
+            "{PARAMETERS}", f"{format_param_generater}"
         )
