@@ -44,12 +44,8 @@ class Generator:
                 prompt=user_prompt.prompt,
                 parameters=parameters
             )
-            print(function_calling)
             self.productjson.add_function(function_calling)
             self.productjson.write_in_file(path)
 
-    def __valid_parameters(self, parameters: Dict[str, int | float | str | float]) -> None:
-        for key, val in parameters.items():
-            if isinstance(val, str):
-                parameters[key] = val[2:]
+
 

@@ -55,4 +55,4 @@ Answer: {
     {
         "prompt": "{USER_PROMPT}",
         "name": "{FUNCTION_NAME}",
-        "parameters": {{PARAMETERS}"""
+        "parameters": {PARAMETERS}"""

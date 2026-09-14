@@ -21,6 +21,7 @@ class ProductJson:
         with open(path, 'w', encoding='utf-8') as fb:
             json_data = self.type_adapter.dump_json(self.functions_calling, indent=2).decode("utf-8")        
             fb.write(json_data)
+
 if __name__ == "__main__":
     ss = ProductJson()
     ss.add_function(FormatFunctionCalling(prompt="simo",

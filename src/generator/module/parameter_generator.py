@@ -38,7 +38,6 @@ class ParameterGenerator:
                 function_definition=function_definition
             )
             self.token = str()
-            print(prompt_gengerater_parameters)
             self.context_window_ids = self.model.custom_encoder(prompt_gengerater_parameters)
             match type_val.type:
                 case "number":
@@ -156,7 +155,7 @@ class ParameterGenerator:
                     cont_decmal += 1
                 case NumberFSM.End_step:
                     return step_generator
-        print(step_generator, number)
+
         return step_generator
 
     def clean(self) -> None:
@@ -173,7 +172,7 @@ class ParameterGenerator:
         )
 
         format_param_generator = ", ".join(
-            f"{key}: {val}"
+            f"\"{key}\": \"{val}\""
             for key, val in self.valid_paramters.items()
         )
 
@@ -186,4 +185,11 @@ class ParameterGenerator:
             "{FUNCTION_NAME}", function_definition.name
         ).replace(
             "{PARAMETERS}", format_param_generator
+        ).replace(
+            "{FUNCTION_DEFINITION}", self.__get_forma_json(function_definition)
         )
+    def __get_forma_json(self, function_definition: FunctionDefn) -> str:
+        from pydantic import TypeAdapter
+        type = TypeAdapter(FunctionDefn)
+        return type.dump_json(function_definition, indent=2).decode("utf-8")
+        
