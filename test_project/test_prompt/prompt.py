@@ -1,20 +1,37 @@
-# 1. Neffdo l-variables dialna
-function_description = "Fetches the current weather for a given city."
-user_prompt = "What's the weather like in Casablanca today?"
+from pathlib import Path
+from typing import Dict
+from pydantic import BaseModel, TypeAdapter
 
-# 2. Katktd l-string w katzeed 'f' f l-bdik (f-string)
-function_argument_dynamic = f"""
-    Function:
-    {function}
 
-    Description:
-    {function_description}
+class FormatFunctionCalling(BaseModel):
+    prompt: str
+    name: str
+    parameters: Dict[str, str | int | float | bool]
 
-    User request:
-    {user_prompt}
-    <|im_end|>
 
-    Answer:
-    """
+class ProductJson:
+    def __init__(self, functions_calling: list[FormatFunctionCalling] | None = None) -> None:
+        self.functions_calling = functions_calling or []
+        self.type_adapter = TypeAdapter(list[FormatFunctionCalling])
 
-print(function_argument_dynamic)
+    def add_function(self, func: FormatFunctionCalling) -> None:
+        self.functions_calling.append(func)
+
+    def write_in_file(self, path: Path) -> None:
+        with open(path, 'w', encoding='utf-8') as fb:
+            json_data = self.type_adapter.dump_json(self.functions_calling, indent=2).decode("utf-8")        
+            fb.write(json_data)
+if __name__ == "__main__":
+    ss = ProductJson()
+    ss.add_function(FormatFunctionCalling(prompt="simo",
+                                      parameters={"test": 12},
+                                      name="sssss"))
+    ss.add_function(FormatFunctionCalling(prompt="simo",
+                                      parameters={"test": 12},
+                                      name="sssss"))
+    ss.add_function(FormatFunctionCalling(prompt="simo",
+                                      parameters={"test": 12},
+                                      name="sssss"))
+
+    ss.write_in_file(Path('file.json'))
+

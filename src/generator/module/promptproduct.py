@@ -19,25 +19,40 @@ Answer: {
     "function_name": """
 
 
-    PARAMERTER_GENERATER = """
-You are a precise AI function router. Your task is to analyze the user input and convert it into a valid JSON function call based on the provided schemas.
+    PARAMETER_GENERATOR = """
+        You are a function-calling assistant that
+        helps me get a JSON format from a user prompt.
 
-### Guidelines:
-1. STRICT EXTRACTION: Only extract parameters explicitly present in the user prompt. DO NOT invent, hallucinate, or assume default values unless required by the schema.
-2. TYPES & CONVERSION: Ensure extracted values strictly match the schema data types. Convert integer inputs to floats when expected by the function schema.
-3. PATTERN MATCHING: Dynamically map minimal text patterns from the prompt to the correct argument fields logically.
-4. STRICT OUTPUT FORMAT: Respond ONLY with a valid JSON object matching the requested schema. Do not include any explanations, markdown code blocks, or reasoning text.
-5. not Duplicate val
-### Output Schema:
-{
-  "name": "function_name",
-  "arguments": { ... }
-}
+        Available functions:
+        {FUNCTION_DEFINITION}
 
-### User Input:
-{USER_PROMPT}
+        Exampe 1:
+            Prompt: "what is the sum of 1 and 2"
 
-### Output:
-{
-    "name" : "{FUNCTION_NAME}"
-    "arguments: {PARAMETERS}\""""
+            Answer:
+            {
+                "prompt": "what is the sum of 1 and 2",
+                "name": "fn_add_numbers",
+                "parameters": {"a": 1.0,
+                                "b": 2.0}
+            }
+
+        Exampe 2:
+            Prompt: "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS"
+
+            Answer:
+            {
+                "prompt": "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS",
+                "name": "fn_substitute_string_with_regex",
+                "parameters": {"source_string": "Hello 34 I'm 233 years old",
+                                "regex": "\d+",
+                                "replacement": "NUMBERS"}
+            }
+
+    User prompt: {USER_PROMPT}
+
+    JSON:
+    {
+        "prompt": "{USER_PROMPT}",
+        "name": "{FUNCTION_NAME}",
+        "parameters": {{PARAMETERS}"""

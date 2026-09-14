@@ -9,7 +9,7 @@ import numpy
 class StringFSM(Enum):
     Start_step = auto()
     Escape_step = auto()
-    Context_step = auto()
+    Content_step = auto()
     Fini_step = auto()
 
 
@@ -38,7 +38,7 @@ class ParameterGenerator:
                 function_definition=function_definition
             )
             self.token = str()
-            # print(prompt_gengerater_parameters)
+            print(prompt_gengerater_parameters)
             self.context_window_ids = self.model.custom_encoder(prompt_gengerater_parameters)
             match type_val.type:
                 case "number":
@@ -56,7 +56,7 @@ class ParameterGenerator:
     def __generater_numbers(self, name_arg: str) -> float:
         model: ManagerLLM = self.model
         token = str()
-        self.context_window_ids += model.custom_encoder(f"{name_arg}: ")
+        self.context_window_ids += model.custom_encoder(f"\"{name_arg}\": ")
         while True:
             next_token_possible: list[int] | None = self.__git_tokens_possible_number(token)
             if next_token_possible is None:
@@ -77,7 +77,7 @@ class ParameterGenerator:
     def __generater_string(self, name_arg: str) -> str:
         model: ManagerLLM = self.model
         token = str()
-        self.context_window_ids += model.custom_encoder(f"{name_arg}:")
+        self.context_window_ids += model.custom_encoder(f"\"{name_arg}\": ")
         while True:
             logits = model.get_logits(self.context_window_ids)
             token_next_ids: int  = cast(int ,numpy.argmax(logits))
@@ -116,8 +116,8 @@ class ParameterGenerator:
                     if ch == "\\":
                         step_generator = StringFSM.Escape_step
                     else:
-                        step_generator = StringFSM.Context_step
-                case StringFSM.Context_step:
+                        step_generator = StringFSM.Content_step
+                case StringFSM.Content_step:
                     if ch == "\\":
                         step_generator = StringFSM.Escape_step
                     elif ch == '"' and conut_char:
@@ -125,7 +125,7 @@ class ParameterGenerator:
                     else:
                         conut_char += 1
                 case StringFSM.Escape_step:
-                    step_generator = StringFSM.Context_step
+                    step_generator = StringFSM.Content_step
                 case StringFSM.Fini_step:
                     return StringFSM.Fini_step
         return step_generator
@@ -162,22 +162,28 @@ class ParameterGenerator:
     def clean(self) -> None:
         self.context_window_ids: list[int] = list()
 
-    def builder_prompt(self,
-                       user_prompt: str,
-                       function_definition: FunctionDefn
-                       ) -> str:
-        formatted_params = ", ".join([f"{key}: {val.type}"
-                                      for key, val in
-                                      function_definition.parameters.items()])
-        format_param_generater = ", ".join(f"{key}: {val}" for key, val in self.valid_paramters.items())
-        if format_param_generater:
-            format_param_generater += ','
-        return PromptProduct.PARAMERTER_GENERATER.replace(
+    def builder_prompt(
+        self,
+        user_prompt: str,
+        function_definition: FunctionDefn) -> str:
+
+        formatted_params = ", ".join(
+            f"\"{key}\": {val.type}"
+            for key, val in function_definition.parameters.items()
+        )
+
+        format_param_generator = ", ".join(
+            f"{key}: {val}"
+            for key, val in self.valid_paramters.items()
+        )
+
+        if format_param_generator:
+            format_param_generator += ","
+
+        return PromptProduct.PARAMETER_GENERATOR.replace(
             "{USER_PROMPT}", user_prompt
         ).replace(
             "{FUNCTION_NAME}", function_definition.name
         ).replace(
-            "{PARAMETERS}", f"{format_param_generater}"
-        ).replace(
-            "{PARAMETERS_SCHEMA}", format_param_generater
+            "{PARAMETERS}", format_param_generator
         )
