@@ -16,7 +16,7 @@ USER PROMPT:
 
 FUNCTION NAME:"""
 
-    PARAMETER_GENERATOR = """You are a strict function-parameter extractor.
+    PARAMETER_GENERATOR = r"""You are a strict function-parameter extractor.
 
 Your task is to generate the value of CURRENT PARAMETER for the selected
 function. Use the complete FUNCTION DEFINITION and the USER PROMPT together.
@@ -26,41 +26,36 @@ Rules:
 1. Extract only the value for CURRENT PARAMETER from USER PROMPT.
 2. Respect the type declared in FUNCTION DEFINITION.
 3. Do not copy the parameter name or reuse another parameter's value.
-4. Output one value only.
-5. For strings, remove only the surrounding quotes from the prompt.
+4. Output one value only, without a key, explanation, JSON, or markdown.
 
-Exampe 1:
-Prompt: "what is the sum of 1 and 2"
-Answer:
-{
-    "prompt": "what is the sum of 1 and 2",
-    "name": "fn_add_numbers",
-    "parameters": {"a": 1.0,
-                   "b": 2.0}
-}
-Exampe 2:
-Prompt: "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS"
-Answer:
-{
-    "prompt": "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS",
-    "name": "fn_substitute_string_with_regex",
-    "parameters": {"source_string": "Hello 34 I'm 233 years old",
-                   "regex": "\d+",
-                   "replacement": "NUMBERS"}
-}
+Examples:
+
+Example A:
+User prompt:
+Replace all vowels in "Programming is fun" with asterisks
+{"name": "fn_substitute_string_with_regex", "parameters": {
+  "source_string": Programming is fun,
+  "regex": [aeiouAEIOU],
+  "replacement": *
+}}
+
+Example B:
+User prompt:
+Substitute the word "cat" with "dog" in
+{"name": "fn_substitute_string_with_regex", "parameters": {
+  "source_string": The cat sat on the mat with another cat,
+  "regex": \bcat\b,
+  "replacement": dog
+}}
+
 Now extract from the actual request:
-
 FUNCTION DEFINITION:
 {FUNCTION_DEFINITION}
-
 USER PROMPT:
 {USER_PROMPT}
-
 ALREADY EXTRACTED PARAMETERS:
 {PARAMETERS}
-
 CURRENT PARAMETER:
 Name: {PARAMETER_NAME}
 Type: {PARAMETER_TYPE}
-
 CURRENT VALUE:"""
