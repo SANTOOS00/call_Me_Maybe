@@ -1,195 +1,172 @@
-from ...parser import FunctionDefn
-from ...llm_manager import ManagerLLM
-from .promptproduct import PromptProduct
-
-from typing import Dict, Literal, cast
+import json
+import re
 from enum import Enum, auto
+from typing import Dict
+
 import numpy
 
-class StringFSM(Enum):
-    Start_step = auto()
-    Escape_step = auto()
-    Content_step = auto()
-    Fini_step = auto()
+from ...llm_manager import ManagerLLM
+from ...parser import FunctionDefn
+from .promptproduct import PromptProduct
+
+
+ParameterValue = int | str | bool | float
 
 
 class NumberFSM(Enum):
-    Start_step = auto()
-    Sign_step = auto()
-    Decimal_step = auto()
-    Number_step = auto()
-    End_step = auto()
+    START = auto()
+    SIGN = auto()
+    INTEGER = auto()
+    DECIMAL = auto()
+    END = auto()
 
 
 class ParameterGenerator:
-    def __init__(self, model: ManagerLLM) -> None:
-        self.model: ManagerLLM = model
-        self.valid_paramters: Dict[str, int | str | bool | float] = {}
-        self.context_window_ids: list[int]
-        self.token: str
+    _MAX_STRING_TOKENS = 64
+    _MAX_NUMBER_TOKENS = 16
+    _MAX_BOOLEAN_TOKENS = 8
 
-    def generate(self, function_definition: FunctionDefn, prompt: str) -> Dict[str, int | str | bool | float]:
-        self.valid_paramters: Dict[str, int | str | bool | float] = {}
-        for name_arg, type_val in function_definition.parameters.items():
-            # parameters = self.builder_parameters(self.generater_valid_paramters, name_arg)
-            # print(parameters)
-            prompt_gengerater_parameters = self.builder_prompt(
+    def __init__(self, model: ManagerLLM) -> None:
+        self.model = model
+        self.valid_parameters: Dict[str, ParameterValue] = {}
+        self.context_window_ids: list[int] = []
+
+    def generate(
+        self, function_definition: FunctionDefn, prompt: str
+    ) -> Dict[str, ParameterValue]:
+        self.valid_parameters = {}
+
+        for name, parameter_type in function_definition.parameters.items():
+            parameter_prompt = self.builder_prompt(
                 user_prompt=prompt,
-                function_definition=function_definition
+                function_definition=function_definition,
+                parameter_name=name,
+                parameter_type=parameter_type.type,
             )
-            self.token = str()
-            self.context_window_ids = self.model.custom_encoder(prompt_gengerater_parameters)
-            match type_val.type:
-                case "number":
-                    self.valid_paramters[name_arg] = self.__generater_numbers(name_arg)
-                case "integer":
-                    self.valid_paramters[name_arg] = self.__generater_numbers(name_arg)
+            self.context_window_ids = self.model.custom_encoder(parameter_prompt)
+
+            match parameter_type.type:
                 case "string":
-                    self.valid_paramters[name_arg] = self.__generater_string(name_arg)
+                    value = self._generate_string()
+                case "number":
+                    value = self._generate_number(len(prompt))
+                case "integer":
+                    value = int(self._generate_number(len(prompt)))
                 case "boolean":
-                    pass
+                    value = self._generate_boolean()
                 case _:
                     pass
-        return self.valid_paramters
+            self.valid_parameters[name] = value
+        return self.valid_parameters
 
-    def __generater_numbers(self, name_arg: str) -> float:
-        model: ManagerLLM = self.model
-        token = str()
-        self.context_window_ids += model.custom_encoder(f"\"{name_arg}\": ")
-        while True:
-            next_token_possible: list[int] | None = self.__git_tokens_possible_number(token)
-            if next_token_possible is None:
-                break
-            logits: list[float] = model.mask_logits(self.context_window_ids, next_token_possible)
+    def _generate_string(self) -> str:
+        generated = self._generate_text(self._MAX_STRING_TOKENS)
+        generated = generated.splitlines()[0].strip() if generated else ""
+        generated = generated.split(",", maxsplit=1)[0].strip()
+        generated = generated.rstrip("},")
+        if len(generated) >= 2 and generated[0] == generated[-1] in {'"', "'"}:
+            generated = generated[1:-1]
+        return generated.strip()
+
+    def _generate_boolean(self) -> bool:
+        generated = self._generate_text(self._MAX_BOOLEAN_TOKENS)
+        candidates = generated.strip().lower().split(",", maxsplit=1)[0].split()
+        if not candidates:
+            raise ValueError("Model generated an empty boolean value")
+        value = candidates[0]
+        if value not in {"true", "false"}:
+            raise ValueError(f"Model generated an invalid boolean value: {generated!r}")
+        return value == "true"
+
+    def _generate_text(self, max_tokens: int) -> str:
+        generated = ""
+        for _ in range(max_tokens):
+            logits = self.model.get_logits(self.context_window_ids)
             token_id = int(numpy.argmax(logits))
-            token_string = model.decode_token(token_id)
+            token = self.model.decode_token(token_id)
             self.context_window_ids.append(token_id)
-            token += token_string
-            step = self.__get_step_generator_number(token)
-            if step == NumberFSM.End_step:
-                if "," in token:
-                    index = token.index(",")
-                    token = token[:index]
+            if not token:
                 break
-        return float(token)
-
-    def __generater_string(self, name_arg: str) -> str:
-        model: ManagerLLM = self.model
-        token = str()
-        self.context_window_ids += model.custom_encoder(f"\"{name_arg}\": ")
-        while True:
-            logits = model.get_logits(self.context_window_ids)
-            token_next_ids: int  = cast(int ,numpy.argmax(logits))
-            self.context_window_ids.append(token_next_ids)
-            token_string: str = model.decode_token(token_next_ids)
-            token += token_string
-            print(token)
-            if self.__get_step_generator_string(token) == StringFSM.Fini_step:
-                if '"' in token:
-                    index = token.rfind('"')
-                    token = token[:index]
+            generated += token
+            if any(character in token for character in ("\n", "\r")):
                 break
-        return token
+        return generated
 
-    def __git_tokens_possible_number(self, number: str) -> list[int] | None:
-        step_generator = self.__get_step_generator_number(number)
-        match step_generator:
-            case NumberFSM.Start_step:
-                return self.model.encoder_chr_by_chr("-+1234567890")
-            case NumberFSM.Sign_step:
-                return self.model.encoder_chr_by_chr("1234567890")
-            case NumberFSM.Number_step:
-                return self.model.encoder_chr_by_chr("1234567890,.")
-            case NumberFSM.Decimal_step:
-                return self.model.encoder_chr_by_chr("1234567890,")
-            case NumberFSM.End_step:
-                return None
+    def _generate_number(self, max_tokens: int) -> float:
+        generated = ""
+        for _ in range(max_tokens):
+            possible_tokens = self._possible_number_tokens(generated)
+            if possible_tokens is None:
+                break
 
-    def __get_step_generator_string(self, string: str) -> StringFSM:
-        
-        step_generator: StringFSM = StringFSM.Start_step
-        conut_char = 0
-        for ch in string:
-            match step_generator:
-                case StringFSM.Start_step:
-                    if ch == "\\":
-                        step_generator = StringFSM.Escape_step
-                    else:
-                        step_generator = StringFSM.Content_step
-                case StringFSM.Content_step:
-                    if ch == "\\":
-                        step_generator = StringFSM.Escape_step
-                    elif ch == '"' and conut_char:
-                        return StringFSM.Fini_step
-                    else:
-                        conut_char += 1
-                case StringFSM.Escape_step:
-                    step_generator = StringFSM.Content_step
-                case StringFSM.Fini_step:
-                    return StringFSM.Fini_step
-        return step_generator
-    
-    def __get_step_generator_number(self, number: str) -> NumberFSM:
-        step_generator: NumberFSM = NumberFSM.Start_step
-        cont_decmal = 0
-        cont_number = 0
-        for nu in number:
-            match step_generator:
-                case NumberFSM.Start_step:
-                    if nu in "-+":
-                        step_generator = NumberFSM.Sign_step
-                    else:
-                        step_generator = NumberFSM.Number_step
-                case NumberFSM.Sign_step:
-                    step_generator = NumberFSM.Number_step
-                case NumberFSM.Number_step:
-                    if nu == '.' and cont_number != 0:
-                        step_generator = NumberFSM.Decimal_step
-                    elif nu == ',':
-                        return NumberFSM.End_step
-                    else:
-                        cont_number += 1
-                case NumberFSM.Decimal_step:
-                    if nu == ',' and cont_decmal:
-                        return NumberFSM.End_step
-                    cont_decmal += 1
-                case NumberFSM.End_step:
-                    return step_generator
+            logits = self.model.mask_logits(self.context_window_ids, possible_tokens)
+            token_id = int(numpy.argmax(logits))
+            token = self.model.decode_token(token_id)
+            self.context_window_ids.append(token_id)
+            generated += token
 
-        return step_generator
+            if "," in generated or "\n" in generated:
+                generated = re.split(r"[,\r\n]", generated, maxsplit=1)[0]
+                break
 
-    def clean(self) -> None:
-        self.context_window_ids: list[int] = list()
+            if self._number_state(generated) == NumberFSM.END:
+                break
+
+        value = generated.strip()
+        if not re.fullmatch(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)", value):
+            raise ValueError(f"Model generated an invalid number value: {generated}")
+        return float(value)
+
+    def _possible_number_tokens(self, number: str) -> list[int] | None:
+        state = self._number_state(number)
+        if state == NumberFSM.START:
+            characters = "-+0123456789"
+        elif state == NumberFSM.SIGN:
+            characters = "0123456789"
+        elif state == NumberFSM.INTEGER:
+            characters = "0123456789.,\n"
+        elif state == NumberFSM.DECIMAL:
+            characters = "0123456789,\n"
+        else:
+            return None
+        return self.model.encoder_chr_by_chr(characters)
+
+    @staticmethod
+    def _number_state(number: str) -> NumberFSM:
+        if not number:
+            return NumberFSM.START
+        if number in {"+", "-"}:
+            return NumberFSM.SIGN
+        if re.fullmatch(r"[+-]?\d+", number):
+            return NumberFSM.INTEGER
+        if re.fullmatch(r"[+-]?\d+\.", number):
+            return NumberFSM.DECIMAL
+        if re.fullmatch(r"[+-]?\d+\.\d+", number):
+            return NumberFSM.DECIMAL
+        if re.search(r"[,\r\n]", number):
+            return NumberFSM.END
+        return NumberFSM.END
 
     def builder_prompt(
-        self,
-        user_prompt: str,
-        function_definition: FunctionDefn) -> str:
+            self,
+            user_prompt: str,
+            function_definition: FunctionDefn,
+            parameter_name: str,
+            parameter_type: str,
+        ) -> str:
+            current_name = parameter_name
+            current_type = parameter_type
 
-        formatted_params = ", ".join(
-            f"\"{key}\": {val.type}"
-            for key, val in function_definition.parameters.items()
-        )
-
-        format_param_generator = ", ".join(
-            f"\"{key}\": \"{val}\""
-            for key, val in self.valid_paramters.items()
-        )
-
-        if format_param_generator:
-            format_param_generator += ","
-
-        return PromptProduct.PARAMETER_GENERATOR.replace(
-            "{USER_PROMPT}", user_prompt
-        ).replace(
-            "{FUNCTION_NAME}", function_definition.name
-        ).replace(
-            "{PARAMETERS}", format_param_generator
-        ).replace(
-            "{FUNCTION_DEFINITION}", self.__get_forma_json(function_definition)
-        )
-    def __get_forma_json(self, function_definition: FunctionDefn) -> str:
-        from pydantic import TypeAdapter
-        type = TypeAdapter(FunctionDefn)
-        return type.dump_json(function_definition, indent=2).decode("utf-8")
-        
+            return (
+                PromptProduct.PARAMETER_GENERATOR
+                .replace("{USER_PROMPT}", user_prompt)
+                .replace("{FUNCTION_NAME}", function_definition.name)
+                .replace("{FUNCTION_DESCRIPTION}", function_definition.description)
+                .replace(
+                    "{FUNCTION_DEFINITION}",
+                    json.dumps(function_definition.model_dump(), indent=2),
+                )
+                .replace("{PARAMETERS}", repr(self.valid_parameters))
+                .replace("{PARAMETER_NAME}", current_name)
+                .replace("{PARAMETER_TYPE}", current_type)
+            )

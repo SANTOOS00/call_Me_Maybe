@@ -1,9 +1,10 @@
 from src.llm_manager.generatermodel import ManagerLLM
 from ...parser import FunctionDefn
 from ...trie import Trie
-from enum import Enum
+import json
 from .promptproduct import PromptProduct
 import numpy # type: ignore[import-untyped, unused-ignore]
+
 
 class FunctionNameGenerator:
     def __init__(
@@ -53,8 +54,13 @@ class FunctionNameGenerator:
         self.function_name: str = str()
 
     def __build_prompt(self, user_prompt: str) -> str:
+        function_definitions = [
+            function.model_dump() for function in self.functions_definitions
+        ]
         return PromptProduct.FUNCTION_NAME.replace(
             "{user_prompt}", user_prompt
+        ).replace(
+            "{FUNCTION_DEFINITIONS}", json.dumps(function_definitions, indent=2)
         )
 
     def set_functions_names_ids_to_trie(self) -> None:
@@ -63,10 +69,3 @@ class FunctionNameGenerator:
             name_ids: list[int] = self.model.custom_encoder(fn_def.name)
             functions_names_ids.append(name_ids)
         self.trie.insert_many(functions_names_ids)
-
-    # def __get_function_definition(self) -> str:
-    #     print(self.function_name)
-    #     return "hSSSS"
-    #     # for fun in self.functions_definitions:
-    #     #     if fun.name == self.function_name:
-    #     #         print(self)

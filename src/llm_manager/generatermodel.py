@@ -13,7 +13,7 @@ class ManagerLLM(Small_LLM_Model):
         super().__init__(model_name)
 
     def custom_encoder(self, prompt: str) -> list[int]:
-        return [int(p_id) for p_id in cast(list[int], self.encode(prompt).flatten())]
+        return [int(p_id) for p_id in cast(list[int], self.encode(prompt)[0])]
 
     def get_logits(self, generator_ids: list[int]) -> list[float]:
         return self.get_logits_from_input_ids(generator_ids)
@@ -32,4 +32,7 @@ class ManagerLLM(Small_LLM_Model):
     
     @lru_cache(maxsize=6)
     def encoder_chr_by_chr(self, prompt: str) -> list[int]:
-        return [int(self.encode(token)) for token in prompt]
+        token_ids: list[int] = []
+        for character in prompt:
+            token_ids.extend(self.custom_encoder(character))
+        return token_ids

@@ -1,54 +1,204 @@
-# SLD-LLM
+# Call Me Maybe
 
-This document outlines the architecture and implementation of **SLD-LLM**, a clean, well-architected utility wrapper for lightweight Hugging Face causal language models designed specifically for fast prototyping, educational exploration, and low-memory experimentation.
+Call Me Maybe is a Python project that converts natural-language prompts into
+structured function calls. It uses a local Hugging Face causal language model
+to select a function and extract its parameters, then writes the calls as
+JSON.
 
-## Description
+The repository also contains:
 
-The `Small_LLM_Model` class encapsulates boilerplate code to provide a streamlined, high-performance interface for working with causal language models on consumer hardware.
+- `llm_sdk`: a small wrapper around Hugging Face Transformers for local
+  inference.
+- `moulinette`: a CLI for generating function-calling exercises and grading
+  submitted answers.
+- `test_project`: small experiments for the finite-state-machine and prompt
+  parsing ideas.
 
-### Key Architectural Features
+## Requirements
 
-* **Device & Precision Management:** The constructor features smart auto-detection for hardware accelerators, prioritizing Apple Silicon (`mps`) followed by NVIDIA GPUs (`cuda`), with a safe fallback to `cpu`. It automatically configures numerical precision—opting for `float16` on GPUs and MPS to drastically reduce memory usage and speed up inference, while keeping `float32` on CPUs to ensure maximum compatibility.
-* **Robust Initialization & Safety Checks:** The setup handles common Hugging Face edge cases smoothly. If the tokenizer lacks a designated padding token (`pad_token_id`), it safely assigns the end-of-sequence token (`eos_token_id`) to prevent batching errors downstream. Furthermore, it prepares the model for pure inference by invoking `self._model.eval()` and explicitly setting `p.requires_grad = False` across all model parameters, cutting off gradient computation to save memory.
+- Python 3.11 or newer for the main project.
+- [`uv`](https://docs.astral.sh/uv/) for dependency management.
+- A machine able to load the configured model (`Qwen/Qwen3-0.6B` by default).
+  The model and tokenizer are downloaded from Hugging Face on first use.
 
-### Core Utility Methods
+The main project dependencies are declared in `pyproject.toml`:
 
-* `encode(text)`: Transforms a raw input string into a 2D PyTorch tensor of token IDs (`[1, sequence_length]`) and immediately dispatches it to the active computation device.
-* `decode(ids)`: Reverses the tokenization process, accepting either a PyTorch tensor or a Python list of integers and decoding them back into clean text while stripping out special tokens.
-* `get_logits_from_input_ids(input_ids)`: Executes a forward pass under a `torch.no_grad()` context manager, isolates the raw, unnormalized prediction logits for the final token in the sequence, and casts them into a standard Python list of floats.
+- `llm-sdk` (the workspace package)
+- `numpy`
+- `pydantic`
 
-### Example Usage
+The `llm-sdk` package adds `torch`, `transformers`, and
+`huggingface-hub`. The `moulinette` package has its own dependencies
+(`fire`, `pydantic`, and `colorama`).
 
-```python
-    def example(self) -> None:
-        model = Small_LLM_Model()
-        prompt_str = "hello word"
-            
-        # Ensure prompt_ids is a flat list of integers
-        prompt_tensor = model.encode(prompt_str)
-        prompt_ids = prompt_tensor[0].tolist()  # Flattens tensor to [id1, id2, ...]
-        
-        logit = model.get_logits_from_input_ids(prompt_ids)
-        
-        for token_id, _ in enumerate(logit):
-            if token_id in prompt_ids:
-                decoded_text = model.decode([token_id])
-                print(f"'{decoded_text}' this token and token_id {token_id} this index")
+## Installation
 
+From the repository root:
+
+```bash
+uv sync --all-packages
 ```
-[Finite-state machine](https://en.wikipedia.org/wiki/Finite-state_machine)
-[Trie](https://www.geeksforgeeks.org/dsa/trie-insert-and-search/)
-[Constrained Decoding: Forcing LLMs to Respect Your Taxonomy](https://pub.towardsai.net/constrained-decoding-forcing-llms-to-respect-your-taxonomy-3aaaf13329f9)
 
+Or use the Make target:
 
-SPECIAL CASES
-- Duplicate keys (functions_defintions)
-- Duplicate prompt (functions_calling_tests)
-- Empty prompt
-- Empty parameters (functions_defintions)
-- Invalid JSON
-- Ambigious prompts
-- Handle Hallucination of the model
-- wrong types
-- multiple parameters (eg: not valid functions_definition)
-- name function
+```bash
+make install
+```
+
+## Running the function-calling generator
+
+The main CLI requires three paths:
+
+```bash
+uv run python -m src \
+  --functions_definition data/input/functions_definition.json \
+  --input data/input/function_calling_tests.json \
+  --output data/output/function_calls.json
+```
+
+The equivalent Make target is:
+
+```bash
+make run
+```
+
+`src.parser.Parser` validates the input files and converts them into Pydantic
+models. `src.generator.Generator` then:
+
+1. Uses `FunctionNameGenerator` and a trie to restrict generation to the
+   function names supplied in the definitions.
+2. Uses `ParameterGenerator` to extract values for `string`, `number`,
+   `integer`, and `boolean` parameters.
+3. Uses `ProductJson` to append each call and write the result to the output
+   file.
+
+The generated output is a JSON array with this shape:
+
+```json
+[
+  {
+    "prompt": "Greet shrek",
+    "name": "fn_greet",
+    "parameters": {
+      "name": "shrek"
+    }
+  }
+]
+```
+
+### Input formats
+
+Function definitions are an array of objects:
+
+```json
+[
+  {
+    "name": "fn_greet",
+    "description": "Generate a greeting message for a person by name.",
+    "parameters": {
+      "name": {"type": "string"}
+    },
+    "returns": {"type": "string"}
+  }
+]
+```
+
+Prompts are an array containing one `prompt` field:
+
+```json
+[
+  {"prompt": "Greet shrek"}
+]
+```
+
+Supported parameter types are `string`, `number`, `integer`, and `boolean`.
+The Pydantic schemas reject unexpected fields.
+
+## Moulinette: exercises and grading
+
+`moulinette` contains public and private exercise definitions. Public exercises
+are intended for students; private exercises are intended to remain hidden and
+are used for grading.
+
+Generate an exercise set:
+
+```bash
+uv run python -m moulinette prepare_exercises --set public
+uv run python -m moulinette prepare_exercises --set private
+```
+
+The command writes:
+
+- `data/input/functions_definition.json`
+- `data/input/function_calling_tests.json`
+- `data/correction/function_calling_corrections.json`
+
+To grade a generated student answer file:
+
+```bash
+uv run python -m moulinette grade_student_answers \
+  --student_answer_path data/output/function_calls.json \
+  --set public
+```
+
+The grader checks the prompt, function name, parameter validity, and returned
+value. It prints a per-test result and a final score. Set `NO_COLOR=1` to
+disable terminal colors.
+
+## Useful Make targets
+
+| Command | Purpose |
+| --- | --- |
+| `make install` | Install/sync all workspace packages. |
+| `make run` | Run the main generator with the sample data. |
+| `make run_test` | Run the `test_project` module with the sample data. |
+| `make lint` | Run Flake8 and a configured MyPy check. |
+| `make lint-strict` | Run Flake8 and MyPy in strict mode. |
+| `make clean` | Remove local virtual-environment/cache artifacts. |
+
+## Project layout
+
+```text
+.
+├── src/
+│   ├── __main__.py                 # Main CLI entry point
+│   ├── parser/                     # CLI arguments, JSON loading, Pydantic schemas
+│   ├── generator/                  # Function and parameter generation
+│   ├── builderjson/                # Output models and JSON writer
+│   ├── llm_manager/                # Project-specific model adapter
+│   ├── trie/                       # Token-prefix trie for function names
+│   └── custom_error/               # Domain error type
+├── llm_sdk/                        # Reusable local Hugging Face model wrapper
+├── moulinette/                     # Exercise generation and grading CLI
+├── data/
+│   ├── input/                      # Function definitions and prompts
+│   └── output/                     # Generated function calls
+├── test_project/                   # Small FSM/prompt experiments
+├── Makefile
+├── pyproject.toml
+└── uv.lock
+```
+
+## Model behavior and limitations
+
+`llm_sdk.Small_LLM_Model` automatically chooses `mps`, `cuda`, or `cpu`, and
+uses half precision on accelerators and full precision on CPU by default.
+Inference is run with gradients disabled.
+
+The generator currently performs greedy token selection. Parameter extraction
+is deliberately constrained for numbers and uses a small finite-state-machine
+for strings, so prompts with ambiguous wording, missing values, unsupported
+types, malformed JSON, or complex escaping may need additional handling.
+Generated output should therefore be checked before it is used downstream.
+
+## Development notes
+
+Run the checks after making changes:
+
+```bash
+make lint
+```
+
+The repository includes exploratory files and generated JSON fixtures. Virtual
+environments and Python cache directories are local build artifacts and should
+not be edited manually.

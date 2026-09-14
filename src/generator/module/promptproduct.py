@@ -5,54 +5,76 @@ class PromptProduct(str, Enum):
     FUNCTION_NAME = """You are a precise function router.
 
 Task:
-Analyze the USER PROMPT and select the single most appropriate function from the AVAILABLE FUNCTIONS.
+Analyze the USER PROMPT and select the single most appropriate function from
+the FUNCTION DEFINITIONS. Return only one exact function name.
 
-Examples: 
-    Answer: {
-        "prompt": "What is the sum of 2 and 3?",
-        "function_name": "fn_add_numbers",
+FUNCTION DEFINITIONS:
+{FUNCTION_DEFINITIONS}
 
-    }
+USER PROMPT:
+{user_prompt}
 
-Answer: {
-    "prompt": "{user_prompt}",
-    "function_name": """
+FUNCTION NAME:"""
 
+    PARAMETER_GENERATOR = """You are a strict function-parameter extractor.
 
-    PARAMETER_GENERATOR = """
-        You are a function-calling assistant that
-        helps me get a JSON format from a user prompt.
+Your task is to generate the value of CURRENT PARAMETER for the selected
+function. Use the complete FUNCTION DEFINITION and the USER PROMPT together.
+The parameter name is only a schema key; it is not automatically the value.
 
-        Available functions:
-        {FUNCTION_DEFINITION}
+Rules:
+1. Extract only the value for CURRENT PARAMETER from USER PROMPT.
+2. Respect the type declared in FUNCTION DEFINITION.
+3. Do not copy the parameter name or reuse another parameter's value.
+4. Output one value only, without a key, explanation, JSON, or markdown.
+5. For strings, remove only the surrounding quotes from the prompt.
+6. For numbers and integers, output only the numeric literal.
 
-        Exampe 1:
-            Prompt: "what is the sum of 1 and 2"
+Examples:
 
-            Answer:
-            {
-                "prompt": "what is the sum of 1 and 2",
-                "name": "fn_add_numbers",
-                "parameters": {"a": 1.0,
-                                "b": 2.0}
-            }
+Example 1 - regex:
+Function definition:
+{"name": "fn_substitute_string_with_regex", "parameters": {
+  "source_string": {"type": "string"},
+  "regex": {"type": "string"},
+  "replacement": {"type": "string"}
+}}
+User prompt: "Replace all numbers in 'Hello 34' with 'NUMBERS'"
+Current parameter: source_string
+Output: Hello 34
+Current parameter: regex
+Output: \\d+
+Current parameter: replacement
+Output: NUMBERS
 
-        Exampe 2:
-            Prompt: "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS"
+Example 2 - regex with a word:
+Function definition:
+{"name": "fn_substitute_string_with_regex", "parameters": {
+  "source_string": {"type": "string"},
+  "regex": {"type": "string"},
+  "replacement": {"type": "string"}
+}}
+User prompt: "Replace the word 'cat' with 'dog' in 'cat sat'"
+Current parameter: source_string
+Output: cat sat
+Current parameter: regex
+Output: \\bcat\\b
+Current parameter: replacement
+Output: dog
 
-            Answer:
-            {
-                "prompt": "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS",
-                "name": "fn_substitute_string_with_regex",
-                "parameters": {"source_string": "Hello 34 I'm 233 years old",
-                                "regex": "\d+",
-                                "replacement": "NUMBERS"}
-            }
+Now extract from the actual request:
 
-    User prompt: {USER_PROMPT}
+FUNCTION DEFINITION:
+{FUNCTION_DEFINITION}
 
-    JSON:
-    {
-        "prompt": "{USER_PROMPT}",
-        "name": "{FUNCTION_NAME}",
-        "parameters": {PARAMETERS}"""
+USER PROMPT:
+{USER_PROMPT}
+
+ALREADY EXTRACTED PARAMETERS:
+{PARAMETERS}
+
+CURRENT PARAMETER:
+Name: {PARAMETER_NAME}
+Type: {PARAMETER_TYPE}
+
+CURRENT VALUE:"""
