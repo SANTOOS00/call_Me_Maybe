@@ -26,42 +26,28 @@ Rules:
 1. Extract only the value for CURRENT PARAMETER from USER PROMPT.
 2. Respect the type declared in FUNCTION DEFINITION.
 3. Do not copy the parameter name or reuse another parameter's value.
-4. Output one value only, without a key, explanation, JSON, or markdown.
+4. Output one value only.
 5. For strings, remove only the surrounding quotes from the prompt.
-6. For numbers and integers, output only the numeric literal.
 
-Examples:
-
-Example 1 - regex:
-Function definition:
-{"name": "fn_substitute_string_with_regex", "parameters": {
-  "source_string": {"type": "string"},
-  "regex": {"type": "string"},
-  "replacement": {"type": "string"}
-}}
-User prompt: "Replace all numbers in 'Hello 34' with 'NUMBERS'"
-Current parameter: source_string
-Output: Hello 34
-Current parameter: regex
-Output: \\d+
-Current parameter: replacement
-Output: NUMBERS
-
-Example 2 - regex with a word:
-Function definition:
-{"name": "fn_substitute_string_with_regex", "parameters": {
-  "source_string": {"type": "string"},
-  "regex": {"type": "string"},
-  "replacement": {"type": "string"}
-}}
-User prompt: "Replace the word 'cat' with 'dog' in 'cat sat'"
-Current parameter: source_string
-Output: cat sat
-Current parameter: regex
-Output: \\bcat\\b
-Current parameter: replacement
-Output: dog
-
+Exampe 1:
+Prompt: "what is the sum of 1 and 2"
+Answer:
+{
+    "prompt": "what is the sum of 1 and 2",
+    "name": "fn_add_numbers",
+    "parameters": {"a": 1.0,
+                   "b": 2.0}
+}
+Exampe 2:
+Prompt: "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS"
+Answer:
+{
+    "prompt": "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS",
+    "name": "fn_substitute_string_with_regex",
+    "parameters": {"source_string": "Hello 34 I'm 233 years old",
+                   "regex": "\d+",
+                   "replacement": "NUMBERS"}
+}
 Now extract from the actual request:
 
 FUNCTION DEFINITION:
