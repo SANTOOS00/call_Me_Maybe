@@ -1,6 +1,6 @@
-test.json
-moulinette
-file.json
+./test.json
+./moulinette
+./file.json
 .venv
-Intra Projects Call Me Maybe Edit.pdf
+./Intra Projects Call Me Maybe Edit.pdf
 .mypy_cache
