@@ -1,9 +1,11 @@
 from src.llm_manager.generatermodel import ManagerLLM
+from .promptproduct import PromptProduct
 from ...parser import FunctionDefn
 from ...trie import Trie
+
+
 import json
-from .promptproduct import PromptProduct
-import numpy # type: ignore[import-untyped, unused-ignore
+import numpy
 
 
 class FunctionNameGenerator:
@@ -20,8 +22,6 @@ class FunctionNameGenerator:
         self.generated_ids: list[int] = list()
         self.function_name: str = str()
         self.set_functions_names_ids_to_trie()
-        
-
 
     def generate(self, user_prompt: str) -> FunctionDefn | None:
         self.clean()
@@ -40,9 +40,8 @@ class FunctionNameGenerator:
             self.generated_ids.append(next_token_id)
             self.function_name += next_token
         return self.__get_function_definition()
-    
 
-    def __get_function_definition(self) -> FunctionDefn | None :
+    def __get_function_definition(self) -> FunctionDefn | None:
         for fun in self.functions_definitions:
             if fun.name in self.function_name:
                 return fun
@@ -60,7 +59,8 @@ class FunctionNameGenerator:
         return PromptProduct.FUNCTION_NAME.replace(
             "{user_prompt}", user_prompt
         ).replace(
-            "{FUNCTION_DEFINITIONS}", json.dumps(function_definitions, indent=2)
+            "{FUNCTION_DEFINITIONS}", json.dumps(function_definitions,
+                                                 indent=2)
         )
 
     def set_functions_names_ids_to_trie(self) -> None:

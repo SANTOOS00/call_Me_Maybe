@@ -1,87 +1,209 @@
 [
   {
-    "prompt": "What is the product of 3 and 5?",
-    "name": "fn_multiply_numbers",
+    "prompt": "Replace all vowels in 'Programming is fun parameters' with \"\\\"",
+    "name": "fn_substitute_string_with_regex",
     "parameters": {
-      "a": 3.0,
-      "b": 5.0
+      "source_string": "Programming is fun parameters",
+      "regex": "([aeiouAEIOU])",
+      "replacement": "\\"
     }
   },
   {
-    "prompt": "What is the product of 12 and 4?",
-    "name": "fn_multiply_numbers",
+    "prompt": "Replace all vowels in 'Programming is fun parameters' with \"\\\\\"",
+    "name": "fn_substitute_string_with_regex",
     "parameters": {
-      "a": 12.0,
-      "b": 4.0
+      "source_string": "Programming is fun parameters",
+      "regex": ".*[aeiou]",
+      "replacement": "\\\\\\"
     }
   },
   {
-    "prompt": "Is 4 an even number?",
-    "name": "fn_is_even",
+    "prompt": "Replace all vowels in 'Programming is fun parameters' with \"\\\"\\\"",
+    "name": "fn_substitute_string_with_regex",
     "parameters": {
-      "n": 4
+      "source_string": "Programming is fun parameters",
+      "regex": "a|e|i|o|u",
+      "replacement": "\\"
     }
   },
   {
-    "prompt": "Is 7 an even number?",
-    "name": "fn_is_even",
+    "prompt": "Replace every digit in 'abc123xyz' using regex \"\\\\d+\" with \"#\"",
+    "name": "fn_substitute_string_with_regex",
     "parameters": {
-      "n": 7
+      "source_string": "abc123xyz",
+      "regex": "\\\\d+",
+      "replacement": "##"
     }
   },
   {
-    "prompt": "Calculate compound interest on 1234567.89 at 0.0375 rate for 23 years",
-    "name": "fn_calculate_compound_interest",
+    "prompt": "Replace every word boundary in 'the cat sat' using regex \"\\\\bcat\\\\b\" with \"dog\"",
+    "name": "fn_substitute_string_with_regex",
     "parameters": {
-      "principal": 1234567.89,
-      "rate": 0.0375,
-      "years": 23
+      "source_string": "the cat sat",
+      "regex": "\\\\bcat\\\\b",
+      "replacement": "dog"
     }
   },
   {
-    "prompt": "Execute SQL query 'SELECT * FROM users' on the production database",
-    "name": "fn_execute_sql_query",
+    "prompt": "Replace every tab \"\\\\t\" with four spaces",
+    "name": "fn_substitute_string_with_regex",
     "parameters": {
-      "query": "SELECT * FROM users",
-      "database": "production"
+      "source_string": "string",
+      "regex": "string",
+      "replacement": "string"
     }
   },
   {
-    "prompt": "Run the query 'INSERT INTO logs VALUES (1, 2, 3)' on the system database",
-    "name": "fn_execute_sql_query",
+    "prompt": "Replace every newline \"\\\\n\" with a space",
+    "name": "fn_substitute_string_with_regex",
     "parameters": {
-      "query": "INSERT INTO logs VALUES (1, 2, 3)",
-      "database": "system"
+      "source_string": "Hello, world!\\n\\n",
+      "regex": "\\\\n",
+      "replacement": " "
     }
   },
   {
-    "prompt": "Read the file at /home/user/data.json with utf-8 encoding",
-    "name": "fn_read_file",
+    "prompt": "Replace \"C:\\\\Users\\\\Admin\" with \"/home/admin\"",
+    "name": "fn_substitute_string_with_regex",
     "parameters": {
-      "path": "home/user/data.json",
-      "encoding": "utf-8"
+      "source_string": "C:\\\\Users\\\\Admin",
+      "regex": "C:\\\\Users\\\\Admin",
+      "replacement": "home/admin"
     }
   },
   {
-    "prompt": "Read C:\\Users\\john\\config.ini with latin-1 encoding",
-    "name": "fn_read_file",
+    "prompt": "Replace \"\\\\\\\\server\\\\share\" with \"/mnt/share\"",
+    "name": "fn_substitute_string_with_regex",
     "parameters": {
-      "path": "C:\\\\Users\\\\john\\\\config.ini",
-      "encoding": "latin-1"
+      "source_string": "\\\\\\server\\\\share",
+      "regex": "\\\\\\server\\\\share",
+      "replacement": "mnt/share"
     }
   },
   {
-    "prompt": "Format template: Hello {user}'s profile!",
-    "name": "fn_format_template",
+    "prompt": "Replace the string \"\\\"Hello\\\"\" with \"Hi\"",
+    "name": "fn_substitute_string_with_regex",
     "parameters": {
-      "template": "Hello {user}'s profile!"
+      "source_string": "Hello",
+      "regex": "Hello",
+      "replacement": "Hi"
     }
   },
   {
-    "prompt": "Format template: Say \"hello\" to {name}",
-    "name": "fn_format_template",
+    "prompt": "Replace the string \"\\\\\\\"\" with \"!\"",
+    "name": "fn_substitute_string_with_regex",
     "parameters": {
-      "template": "Say \\"
+      "source_string": "string",
+      "regex": "string",
+      "replacement": "string"
+    }
+  },
+  {
+    "prompt": "Replace the regex \"[aeiouAEIOU]\" with \"*\"",
+    "name": "fn_substitute_string_with_regex",
+    "parameters": {
+      "source_string": "string",
+      "regex": "string",
+      "replacement": "string"
+    }
+  },
+  {
+    "prompt": "Replace the regex \"[A-Z]+\\\\d*\" with \"TOKEN\"",
+    "name": "fn_substitute_string_with_regex",
+    "parameters": {
+      "source_string": "string",
+      "regex": "string",
+      "replacement": "string"
+    }
+  },
+  {
+    "prompt": "Replace the string \"\\\\\\\\\" with \"\\\\\"",
+    "name": "fn_substitute_string_with_regex",
+    "parameters": {
+      "source_string": "string",
+      "regex": "string",
+      "replacement": "string"
+    }
+  },
+  {
+    "prompt": "Replace the string \"\\\\\" with \"\\\\\\\\\"",
+    "name": "fn_substitute_string_with_regex",
+    "parameters": {
+      "source_string": "string",
+      "regex": "string",
+      "replacement": "string"
+    }
+  },
+  {
+    "prompt": "Replace the Unicode escape \"\\\\u00E9\" with \"e\"",
+    "name": "fn_substitute_string_with_regex",
+    "parameters": {
+      "source_string": "string",
+      "regex": "string",
+      "replacement": "string"
+    }
+  },
+  {
+    "prompt": "Replace \"{\\\"name\\\":\\\"John\\\"}\" with \"{}\"",
+    "name": "fn_substitute_string_with_regex",
+    "parameters": {
+      "source_string": "string",
+      "regex": "string",
+      "replacement": "string"
+    }
+  },
+  {
+    "prompt": "Replace every occurrence of \"\\\\\" in \"C:\\\\Windows\\\\System32\" with \"/\"",
+    "name": "fn_substitute_string_with_regex",
+    "parameters": {
+      "source_string": "C:\\\\Windows\\\\System32",
+      "regex": "\\\\\\\\",
+      "replacement": "/"
+    }
+  },
+  {
+    "prompt": "Replace every occurrence of \"\\\"\" with \"'\"",
+    "name": "fn_substitute_string_with_regex",
+    "parameters": {
+      "source_string": "string",
+      "regex": "string",
+      "replacement": "string"
+    }
+  },
+  {
+    "prompt": "Replace every occurrence of \"\\\\\\\\\\\\\" with \"X\"",
+    "name": "fn_substitute_string_with_regex",
+    "parameters": {
+      "source_string": "string",
+      "regex": "string",
+      "replacement": "string"
+    }
+  },
+  {
+    "prompt": "Replace every occurrence of \"\\\\\\\\\\\\\\\\\" with \"Y\"",
+    "name": "fn_substitute_string_with_regex",
+    "parameters": {
+      "source_string": "string",
+      "regex": "string",
+      "replacement": "string"
+    }
+  },
+  {
+    "prompt": "Replace \"abc\\\\\" with \"xyz\"",
+    "name": "fn_substitute_string_with_regex",
+    "parameters": {
+      "source_string": "abc\\\\",
+      "regex": "abc",
+      "replacement": "xyz"
+    }
+  },
+  {
+    "prompt": "Replace \"\\\\abc\" with \"xyz\"",
+    "name": "fn_substitute_string_with_regex",
+    "parameters": {
+      "source_string": "abc",
+      "regex": "abc",
+      "replacement": "xyz"
     }
   }
 ]

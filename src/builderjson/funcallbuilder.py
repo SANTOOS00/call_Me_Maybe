@@ -10,7 +10,9 @@ class FormatFunctionCalling(BaseModel):
 
 
 class ProductJson:
-    def __init__(self, functions_calling: list[FormatFunctionCalling] | None = None) -> None:
+    def __init__(self,
+                 functions_calling: list[FormatFunctionCalling] | None = None
+                 ) -> None:
         self.functions_calling = functions_calling or []
         self.type_adapter = TypeAdapter(list[FormatFunctionCalling])
 
@@ -19,6 +21,6 @@ class ProductJson:
 
     def write_in_file(self, path: Path) -> None:
         with open(path, 'w', encoding='utf-8') as fb:
-            json_data = self.type_adapter.dump_json(self.functions_calling, indent=2).decode("utf-8")
-            
+            json_data = self.type_adapter.dump_json(self.functions_calling,
+                                                    indent=2).decode("utf-8")
             fb.write(json_data)

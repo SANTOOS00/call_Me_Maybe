@@ -3,7 +3,7 @@ from .schema import FunctionDefn, Prompt
 from typing import cast
 
 
-from pydantic import ValidationError  # type: ignore[import-untyped, unused-ignore]
+from pydantic import ValidationError
 from pathlib import Path
 import argparse
 import json
@@ -41,9 +41,11 @@ class ParserArgs:
         return self.__parser.parse_args()
 
     def __valdate_paths(self, args: argparse.Namespace) -> None:
-        if not args.functions_definition.exists() or not args.functions_definition.exists():
+        if not args.functions_definition.exists() or\
+           not args.functions_definition.exists():
             raise Call_Error(
-                "Functions definition file " f"not found: {args.functions_definition}"
+                "Functions definition file "
+                f"not found: {args.functions_definition}"
             )
         if not args.input.exists() or not args.input.exists():
             raise Call_Error(f"Input file not found: {args.input}")

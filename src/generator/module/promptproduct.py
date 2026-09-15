@@ -13,7 +13,7 @@ USER PROMPT:
 FUNCTION NAME:"""
 
     PARAMETER_GENERATOR = r"""you are a strict function-parameter extractor.
-Example: 
+Example:
 Answer: {
     "prompt": "What is the sum of 2 and 3?",
     "function_prototype": "fn_add_numbers(a: number, b: number)",
@@ -27,7 +27,8 @@ Answer: {
 Answer: {
     "prompt": "Greet shrek",
     "function_prototype: "fn_greet(name: string)",
-    "function_description": "Generate a greeting message for a person by name.",
+    "function_description": "Generate a greeting message for a person\
+        by name.",
     "parameters": {
       "name": "shrek"
     }

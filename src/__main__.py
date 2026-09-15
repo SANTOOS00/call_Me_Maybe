@@ -2,8 +2,6 @@ from .parser import Parser
 from .custom_error import Call_Error
 from .llm_manager import ManagerLLM
 from .generator import Generator
-from typing import cast
-import numpy
 
 import sys
 

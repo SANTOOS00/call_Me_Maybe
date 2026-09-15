@@ -1,14 +1,14 @@
-import json
-from enum import Enum, auto
-from typing import Dict, Literal
-
-import numpy
-
+from .promptproduct import PromptProduct
 from ...llm_manager import ManagerLLM
 from ...parser import FunctionDefn
-from .promptproduct import PromptProduct
 
 
+
+from enum import Enum, auto
+from typing import Dict, Literal, TypeAlias
+import numpy
+
+SCHEMA_TYPES: TypeAlias = Literal["number", "string", "boolean", "integer"]
 ParameterValue = int | str | bool | float
 
 
@@ -19,36 +19,37 @@ class NumberFSM(Enum):
     DECIMAL = auto()
     END = auto()
 
+
 class StringFSM(Enum):
     START = auto()
     CONTENT = auto()
     ESCAPE = auto()
     END = auto()
 
-class ParameterGenerator:
 
-    def __init__(self, model: ManagerLLM, function_definition: FunctionDefn, prompt: str) -> None:
+class ParameterGenerator:
+    def __init__(self,
+                 model: ManagerLLM,
+                 function_definition: FunctionDefn,
+                 prompt: str) -> None:
         self.model = model
         self.valid_parameters: Dict[str, ParameterValue] = {}
         self.context_window_ids: list[int] = []
         self.function_definition: FunctionDefn = function_definition
         self.prompt: str = prompt
 
-    def generate(
-        self
-    ) -> None:
-
-        for name, parameter_type in self.function_definition.parameters.items():
+    def generate(self) -> None:
+        for name, argtype in self.function_definition.parameters.items():
             parameter_prompt = self.builder_prompt(
                 user_prompt=self.prompt,
                 function_definition=self.function_definition,
                 arg_name=name,
-                arg_value=parameter_type.type,
+                arg_value=argtype.type,
             )
             print(parameter_prompt, end="", flush=True)
-            self.context_window_ids = self.model.custom_encoder(parameter_prompt)
-
-            match parameter_type.type:
+            self.context_window_ids = self.model.custom_encoder(
+                parameter_prompt)
+            match argtype.type:
                 case "string":
                     value = self.__generate_string(len(self.prompt))
                 case "number":
@@ -56,7 +57,7 @@ class ParameterGenerator:
                 case "integer":
                     value = int(self.__generate_number())
                 case "boolean":
-                    value = self.__generate_boolean(len(self.prompt))
+                    value = self.__generate_boolean()
                 case _:
                     pass
             self.valid_parameters[name] = value
@@ -65,13 +66,15 @@ class ParameterGenerator:
         current_state: StringFSM
         generated_value:  str = str()
         while True:
-            logits: list[float] = self.model.mask_logits(self.context_window_ids)
+            logits: list[float] = self.model.mask_logits(
+                self.context_window_ids)
             token_id: int = int(numpy.argmax(logits))
             token: str = self.model.decode_token(token_id)
             generated_value += token
-            current_state = self.__get_string_fsm_state(generated_value, prompt_len)
+            current_state = self.__get_string_fsm_state(generated_value,
+                                                        prompt_len)
             self.context_window_ids.append(token_id)
-            if  current_state == StringFSM.END:
+            if current_state == StringFSM.END:
                 if '"' in generated_value:
                     idx_quotes: int = generated_value.index('"')
                     generated_value = generated_value[:idx_quotes]
@@ -79,22 +82,22 @@ class ParameterGenerator:
             print(token, end="", flush=True)
         return generated_value
 
-    def __generate_boolean(self, max_token) -> bool:
+    def __generate_boolean(self) -> bool:
         model = self.model
-        generated: str
-        possible_tokens = model.encoder_chr_by_chr(["true", "false"])
+        possible_tokens: list[int] = model.encoder_chr_by_chr(["false",
+                                                               "true"])
         logit: list[float] = model.mask_logits(self.context_window_ids,
-                                                    possible_tokens)
+                                               possible_tokens)
         token: int = int(numpy.argmax(logit))
-        generated = 
-        return True
-
+        return model.decode_token(token) == "true"
 
     def __generate_number(self) -> float:
         generated: str = ""
         while True:
-            token_possible: list[int] = self.__possible_number_tokens(generated)
-            logits: list[float] = self.model.mask_logits(self.context_window_ids, token_possible)
+            token_possible: list[int] = self.__possible_number_tokens(
+                generated)
+            logits: list[float] = self.model.mask_logits(
+                self.context_window_ids, token_possible)
             token_id = int(numpy.argmax(logits))
             token = self.model.decode_token(token_id)
             self.context_window_ids.append(token_id)
@@ -110,12 +113,12 @@ class ParameterGenerator:
 
     def __possible_number_tokens(self, number: str) -> list[int]:
         characters: list[str]
-        state = self._number_state(number)
+        state: NumberFSM = self._number_state(number)
         if state == NumberFSM.START:
             characters = list("-+0123456789")
         elif state == NumberFSM.SIGN:
             characters = list("0123456789")
-        elif state == NumberFSM.INTEGER:    
+        elif state == NumberFSM.INTEGER:
             characters = list("0123456789.,")
         elif state == NumberFSM.DECIMAL:
             characters = list("0123456789,")
@@ -167,7 +170,7 @@ class ParameterGenerator:
                         current_state = StringFSM.ESCAPE
                     elif len(string) >= max_len:
                         current_state = current_state.END
-                    elif  ch == '"':
+                    elif ch == '"':
                         current_state = StringFSM.END
                 case StringFSM.ESCAPE:
                     current_state = StringFSM.CONTENT
@@ -179,15 +182,17 @@ class ParameterGenerator:
             self,
             user_prompt: str,
             function_definition: FunctionDefn,
-        
             arg_name: str,
-            arg_value: Literal["number", "string", "boolean", "integer"],
-        ) -> str:
+            arg_value: SCHEMA_TYPES
+            ) -> str:
+        arguments: str = function_definition.get_pre_generated_argument_format(
+            self.valid_parameters, (arg_name, arg_value))
         return (
             PromptProduct.PARAMETER_GENERATOR
             .replace("{USER_PROMPT}", user_prompt)
             .replace("{FUNCTION_NAME}", function_definition.name)
-            .replace("{FUNCTION_DESCRIPTION}", function_definition.description)
+            .replace("{FUNCTION_DESCRIPTION}",
+                     function_definition.description)
             .replace("{FUNCTION_PROTOTYPE}", str(function_definition))
-            .replace("{ARGUMENTS}", function_definition.get_pre_generated_argument_format(self.valid_parameters, (arg_name, arg_value)))
+            .replace("{ARGUMENTS}", arguments)
         )

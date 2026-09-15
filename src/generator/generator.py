@@ -2,10 +2,9 @@ from .module import FunctionNameGenerator, ParameterGenerator
 from ..parser import Prompt, FunctionDefn
 from ..llm_manager import ManagerLLM
 from ..builderjson import FormatFunctionCalling, ProductJson
+
+
 from pathlib import Path
-
-
-from typing import Dict
 import sys
 
 
@@ -28,13 +27,15 @@ class Generator:
 
     def run(self, path: Path) -> None:
         for user_prompt in self.prompts:
-            function: FunctionDefn | None = \
-            self.generater_fun_name.generate(user_prompt=user_prompt.prompt)
+            function: FunctionDefn | None = self.generater_fun_name.generate(
+                user_prompt=user_prompt.prompt)
             if function is None:
                 print("is not function definition")
                 sys.exit(1)
             generater_parameters: ParameterGenerator = ParameterGenerator(
-                model=self.model, function_definition=function, prompt=user_prompt.prompt
+                model=self.model,
+                function_definition=function,
+                prompt=user_prompt.prompt
             )
             generater_parameters.generate()
             function_calling: FormatFunctionCalling = FormatFunctionCalling(
@@ -44,6 +45,3 @@ class Generator:
             )
             self.productjson.add_function(function_calling)
             self.productjson.write_in_file(path)
-
-
-
