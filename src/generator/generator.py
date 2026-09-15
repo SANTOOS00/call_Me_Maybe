@@ -32,16 +32,17 @@ class Generator:
             if function is None:
                 print("is not function definition")
                 sys.exit(1)
-            generater_parameters: ParameterGenerator = ParameterGenerator(
-                model=self.model,
-                function_definition=function,
-                prompt=user_prompt.prompt
-            )
-            generater_parameters.generate()
-            function_calling: FormatFunctionCalling = FormatFunctionCalling(
-                name=function.name,
-                prompt=user_prompt.prompt,
-                parameters=generater_parameters.valid_parameters
-            )
-            self.productjson.add_function(function_calling)
-            self.productjson.write_in_file(path)
+            # generater_parameters: ParameterGenerator = ParameterGenerator(
+            #     model=self.model,
+            #     function_definition=function,
+            #     prompt=user_prompt.prompt
+            # )
+            print(function.name)
+            # generater_parameters.generate()
+            # function_calling: FormatFunctionCalling = FormatFunctionCalling(
+            #     name=function.name,
+            #     prompt=user_prompt.prompt,
+            #     parameters=generater_parameters.valid_parameters
+            # )
+            # self.productjson.add_function(function_calling)
+            # self.productjson.write_in_file(path)

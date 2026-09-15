@@ -1,11 +1,8 @@
 [project]
 name = "call-me-maybe"
-version = "0.0.0"
+version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-authors = [
-    { name = "SANTOOS00", email = "mohamederraiss@icloud.com" }
-]
 requires-python = ">=3.11"
 dependencies = [
     "llm-sdk",
@@ -13,7 +10,6 @@ dependencies = [
     "numpy>=2.4.6",
     "pydantic>=2.13.5",
 ]
-
 
 [project.scripts]
 call-me-maybe = "src.__main__:main"
@@ -33,4 +29,3 @@ llm-sdk = { workspace = true }
 
 [tool.uv.workspace]
 members = ["llm_sdk"]
-
