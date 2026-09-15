@@ -3,7 +3,6 @@ class Node:
         self.children: dict[int, Node] = dict()
         self.value: int | None = value
         self.isLeaf: bool = False
-        self.is_end: bool = True
 
 
 class Trie:
@@ -29,3 +28,9 @@ class Trie:
     def insert_many(self, ids: list[list[int]]) -> None:
         for ids_row in ids:
             self.__insert(ids_row)
+
+    def search(self, token_id: list[int]) -> bool:
+        current_node: Node = self.__root_node
+        for id in token_id:
+            current_node = current_node.children[id]
+        return current_node.isLeaf

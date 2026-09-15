@@ -29,7 +29,7 @@ class FunctionDefn(BaseModel):
     def get_pre_generated_argument_format(
             self,
             generated_arguments: dict[str, ARG_TYPE],
-            current_arg: tuple[str, type]
+            current_arg: tuple[str, Type]
             ) -> str:
         format_arg: list[str] = list("{\n\t")
         prefix_suffex: str
@@ -39,6 +39,6 @@ class FunctionDefn(BaseModel):
                 f'"{arg_name}": {prefix_suffex}'
                 f'{arg_value}{prefix_suffex},\n\t')
         current_arg_name, current_arg_type = current_arg
-        prefix_suffex = '"' if current_arg_type == "string" else str()
+        prefix_suffex = '"' if current_arg_type.type == "string" else str()
         format_arg.append(f'"{current_arg_name}": {prefix_suffex}')
         return "".join(format_arg)

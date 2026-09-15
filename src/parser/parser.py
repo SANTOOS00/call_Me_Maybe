@@ -1,6 +1,6 @@
 from src.custom_error import Call_Error
 from .schema import FunctionDefn, Prompt
-from typing import cast
+from typing import cast, Any
 
 
 from pydantic import ValidationError
@@ -24,19 +24,16 @@ class ParserArgs:
             "--functions_definition",
             "-f",
             type=Path,
-            required=True
         )
         self.__parser.add_argument(
             "--output",
             "-o",
             type=Path,
-            required=True
             )
         self.__parser.add_argument(
             "--input",
             "-i",
             type=Path,
-            required=True,
         )
         return self.__parser.parse_args()
 
@@ -90,7 +87,8 @@ class Parser:
         if not os.access(path, os.R_OK):
             raise Call_Error("[ERROR]: File is not readable")
 
-    def get_path_funcall_json(self) -> Path:
+    def get_path_funcall_json(self) -> Any:
+        print(type(self.args.output))
         return self.args.output
 
     def __set_args(self) -> None:

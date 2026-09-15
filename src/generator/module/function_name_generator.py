@@ -20,12 +20,15 @@ class FunctionNameGenerator:
 
         self.context_window_ids: list[int]
         self.generated_ids: list[int] = list()
-        self.function_name: str = str()
         self.set_functions_names_ids_to_trie()
 
     def generate(self, user_prompt: str) -> FunctionDefn | None:
+        def __check_fini_generator(tokens_str) -> bool:
+            token_id: list[int] = self.model.custom_encoder(tokens_str)             
+            return self.trie.search(token_id)
         self.clean()
         global_prompt: str = self.__build_prompt(user_prompt)
+
         self.context_window_ids = self.model.custom_encoder(global_prompt)
         while True:
             high_scores: list[int] = self.trie.get_children(self.generated_ids)
@@ -39,17 +42,21 @@ class FunctionNameGenerator:
             self.context_window_ids.append(next_token_id)
             self.generated_ids.append(next_token_id)
             self.function_name += next_token
+            if __check_fini_generator(self.function_name):
+                self.function_name = self.function_name[:-1]
+                break
         return self.__get_function_definition()
 
     def __get_function_definition(self) -> FunctionDefn | None:
+        print(self.function_name)
         for fun in self.functions_definitions:
-            if fun.name in self.function_name:
+            if fun.name == self.function_name:
                 return fun
         return None
 
     def clean(self) -> None:
-        self.context_window_ids: list[int] = list()
-        self.generated_ids: list[int] = list()
+        self.context_window_ids = list()
+        self.generated_ids = list()
         self.function_name: str = str()
 
     def __build_prompt(self, user_prompt: str) -> str:
@@ -67,5 +74,6 @@ class FunctionNameGenerator:
         functions_names_ids: list[list[int]] = list()
         for fn_def in self.functions_definitions:
             name_ids: list[int] = self.model.custom_encoder(fn_def.name)
+            name_ids.append(self.model.custom_encoder('"')[0])
             functions_names_ids.append(name_ids)
         self.trie.insert_many(functions_names_ids)

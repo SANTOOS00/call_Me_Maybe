@@ -16,9 +16,6 @@ INPUT_DEF = data/input/function_calling_tests.json
 
 FUNCTIONS_DEFINITION_DEF = data/input/functions_definition.json
 
-FILES = src/*.py
-
-
 install:
 	@$(UV) sync --all-packages
 	@echo "venv environment has been created"
@@ -29,13 +26,17 @@ run: install
 	--input $(INPUT_DEF)
 
 clean:
-	rm -rf .venv .mypy_cache
+	rm -rf .venv *.egg-info
 	find . -type d -name "__pycache__" -exec rm -rf {} +
+	find . -type d -name ".mypy_cache" -exec rm -rf {} +
 
 lint: install
-	$(PATH_MYPY) $(FILES) $(FLAGS)
-	$(PATH_FLAKE8) $(FILES)
+	$(PATH_FLAKE8) $(PROJECT)
+	$(PATH_MYPY) $(PROJECT) $(FLAGS)
 
 lint-strict: install
-	@$(PATH_FLAKE8) $(FILES)
-	@$(PATH_MYPY) $(FILES) --strict
+	@$(PATH_MYPY) $(PROJECT) --strict
+	@$(PATH_FLAKE8) $(PROJECT)
+
+debug:
+	$(UV) run python -m pdb src/__main__.py

@@ -1,7 +1,6 @@
 from .promptproduct import PromptProduct
 from ...llm_manager import ManagerLLM
-from ...parser import FunctionDefn
-
+from ...parser import FunctionDefn, Type
 
 
 from enum import Enum, auto
@@ -44,16 +43,17 @@ class ParameterGenerator:
                 user_prompt=self.prompt,
                 function_definition=self.function_definition,
                 arg_name=name,
-                arg_value=argtype.type,
+                arg_value=argtype,
             )
             print(parameter_prompt, end="", flush=True)
+            value: str | int | bool | float
             self.context_window_ids = self.model.custom_encoder(
                 parameter_prompt)
             match argtype.type:
                 case "string":
                     value = self.__generate_string(len(self.prompt))
                 case "number":
-                    value = float(self.__generate_number())
+                    value = self.__generate_number()
                 case "integer":
                     value = int(self.__generate_number())
                 case "boolean":
@@ -79,7 +79,9 @@ class ParameterGenerator:
                     idx_quotes: int = generated_value.index('"')
                     generated_value = generated_value[:idx_quotes]
                 break
-            print(token, end="", flush=True)
+            print(generated_value)
+
+            # print(token, end="", flush=True)
         return generated_value
 
     def __generate_boolean(self) -> bool:
@@ -183,7 +185,7 @@ class ParameterGenerator:
             user_prompt: str,
             function_definition: FunctionDefn,
             arg_name: str,
-            arg_value: SCHEMA_TYPES
+            arg_value: Type
             ) -> str:
         arguments: str = function_definition.get_pre_generated_argument_format(
             self.valid_parameters, (arg_name, arg_value))
