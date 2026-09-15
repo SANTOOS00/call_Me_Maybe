@@ -8,6 +8,7 @@ from pathlib import Path
 import argparse
 import json
 import os
+import sys
 
 
 class ParserArgs:
@@ -80,9 +81,29 @@ class ParserReadData:
         Returns:
             Validated prompt models.
         """
-        with open(path, "r") as fd:
-            prompts = json.load(fd)
-        return [Prompt(**prompt) for prompt in prompts]
+        try:
+            with open(path, "r") as fd:
+                prompts = json.load(fd, object_pairs_hook=self.valid_json)
+            if not isinstance(prompts, list):
+                raise TypeError(
+                    "Expected the JSON content to be a list of prompts.")
+            return [Prompt(**prompt) for prompt in prompts]
+        except json.JSONDecodeError as e:
+            print(f"Error: Invalid JSON syntax in file '{path}' at "
+                  f"line {e.lineno}: {e.msg}", file=sys.stderr)
+            sys.exit(1)
+        except ValidationError as e:
+            print("Error: Data validation failed for Prompt"
+                  f" schema in '{path}':\n{e}", file=sys.stderr)
+            sys.exit(1)
+        except TypeError as e:
+            print("Error: Data structure mismatch while "
+                  f"loading '{path}': {e}", file=sys.stderr)
+            sys.exit(1)
+        except BaseException as e:
+            print("Error: An unexpected error occurred while"
+                  f" loading prompts: {e}", file=sys.stderr)
+            sys.exit(1)
 
     def get_functions_definition(self, path: Path) -> list[FunctionDefn]:
         """Read function definitions from a JSON file.
@@ -93,9 +114,52 @@ class ParserReadData:
         Returns:
             Validated function definition models.
         """
-        with open(path, "r") as fd:
-            function_defn: Any = json.load(fd)
-        return [FunctionDefn(**fun) for fun in function_defn]
+        try:
+            with open(path, "r") as fd:
+                function_defn: Any = json.load(fd, object_pairs_hook=self.valid_json)
+            return [FunctionDefn(**fun) for fun in function_defn]
+        except json.JSONDecodeError as e:
+            print("Error: Invalid JSON syntax in file"
+                  f" '{path}' at line {e.lineno}: {e.msg}", file=sys.stderr)
+            sys.exit(1)
+        except ValidationError as e:
+            print("Error: Data validation failed for Prompt "
+                  f"schema in '{path}':\n{e}", file=sys.stderr)
+            sys.exit(1)
+        except TypeError as e:
+            print("Error: Data structure mismatch while "
+                  f"loading '{path}': {e}", file=sys.stderr)
+            sys.exit(1)
+        except BaseException as e:
+            print("Error: An unexpected error occurred while "
+                  f"loading Functions definitions: {e}", file=sys.stderr)
+            sys.exit(1)
+
+    @staticmethod
+    def valid_json(data_json: list[tuple[str, Any]]) -> dict[str, Any]:
+        """Validate JSON key uniqueness and construct a dictionary.
+
+        Custom object pairs hook for json.load to detect duplicate keys
+        within any JSON object during parsing.
+
+        Args:
+            data_json: A list of key-value tuples representing a parsed
+            JSON object.
+
+        Returns:
+            A dictionary containing the validated key-value pairs.
+
+        Raises:
+            ValueError: If a duplicate key is detected within the JSON object.
+        """
+        seen_keys: set[str] = set()
+        validated_data: dict[str, Any] = {}
+        for key, val in data_json:
+            if key in seen_keys:
+                raise ValueError(f"Duplicate key '{key}' detected in JSON object.")
+            seen_keys.add(key)
+            validated_data[key] = val
+        return validated_data
 
 
 class Parser:
@@ -139,7 +203,6 @@ class Parser:
         Returns:
             The output path supplied on the command line.
         """
-        print(type(self.args.output))
         return self.args.output
 
     def __set_args(self) -> None:
@@ -148,20 +211,14 @@ class Parser:
 
     def __set_functions_definition(self) -> None:
         """Load and validate function definitions from the input file."""
-        try:
-            self.__function_definition = (
-                self.__data.get_functions_definition(
-                    cast(Path, self.args.functions_definition))
-                    )
-        except ValidationError as e:
-            raise Call_Error(str(e))
+        self.__function_definition = (
+            self.__data.get_functions_definition(
+                cast(Path, self.args.functions_definition))
+                )
 
     def __set_prompts(self) -> None:
         """Load and validate prompts from the input file."""
-        try:
-            self.__prompts = self.__data.get_prompts(self.args.input)
-        except ValidationError as e:
-            print(e)
+        self.__prompts = self.__data.get_prompts(self.args.input)
 
     @property
     def get_prompts(self) -> list[Prompt]:
