@@ -16,6 +16,8 @@ INPUT_DEF = data/input/function_calling_tests.json
 
 FUNCTIONS_DEFINITION_DEF = data/input/functions_definition.json
 
+FILES = src/*.py
+
 
 install:
 	@$(UV) sync --all-packages
@@ -31,9 +33,9 @@ clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 
 lint: install
-	$(PATH_MYPY) $(PROJECT) $(FLAGS)
-	$(PATH_FLAKE8) $(PROJECT)
+	$(PATH_MYPY) $(FILES) $(FLAGS)
+	$(PATH_FLAKE8) $(FILES)
 
 lint-strict: install
-	@$(PATH_FLAKE8) $(PROJECT)
-	@$(PATH_MYPY) $(PROJECT) --strict
+	@$(PATH_FLAKE8) $(FILES)
+	@$(PATH_MYPY) $(FILES) --strict
