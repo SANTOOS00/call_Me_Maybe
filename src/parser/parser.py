@@ -11,15 +11,28 @@ import os
 
 
 class ParserArgs:
+    """Parse and validate command-line input paths."""
+
     def __init__(self) -> None:
+        """Initialize the command-line argument parser."""
         self.__parser = argparse.ArgumentParser(description="is test")
 
     def run(self) -> argparse.Namespace:
+        """Parse command-line arguments and validate their paths.
+
+        Returns:
+            Parsed command-line arguments.
+        """
         arg: argparse.Namespace = self.__parser_args()
         self.__valdate_paths(arg)
         return arg
 
     def __parser_args(self) -> argparse.Namespace:
+        """Define and parse the supported command-line arguments.
+
+        Returns:
+            Parsed command-line arguments.
+        """
         self.__parser.add_argument(
             "--functions_definition",
             "-f",
@@ -38,6 +51,11 @@ class ParserArgs:
         return self.__parser.parse_args()
 
     def __valdate_paths(self, args: argparse.Namespace) -> None:
+        """Validate that configured input and output paths exist.
+
+        Args:
+            args: Parsed command-line arguments containing the paths.
+        """
         if not args.functions_definition.exists() or\
            not args.functions_definition.exists():
             raise Call_Error(
@@ -51,25 +69,47 @@ class ParserArgs:
 
 
 class ParserReadData:
+    """Read prompts and function definitions from JSON files."""
+
     def get_prompts(self, path: Path) -> list[Prompt]:
+        """Read prompts from a JSON file.
+
+        Args:
+            path: JSON file containing prompt objects.
+
+        Returns:
+            Validated prompt models.
+        """
         with open(path, "r") as fd:
             prompts = json.load(fd)
         return [Prompt(**prompt) for prompt in prompts]
 
     def get_functions_definition(self, path: Path) -> list[FunctionDefn]:
+        """Read function definitions from a JSON file.
+
+        Args:
+            path: JSON file containing function definition objects.
+
+        Returns:
+            Validated function definition models.
+        """
         with open(path, "r") as fd:
-            function_defn: list = json.load(fd)
+            function_defn: Any = json.load(fd)
         return [FunctionDefn(**fun) for fun in function_defn]
 
 
 class Parser:
+    """Coordinate argument parsing and input data loading."""
+
     def __init__(self) -> None:
+        """Initialize parser state."""
         self.__function_definition: list[FunctionDefn]
         self.__prompts: list[Prompt]
         self.__data: ParserReadData
         self.args: argparse.Namespace
 
     def run(self) -> None:
+        """Parse arguments, load JSON data, and validate the inputs."""
         self.__set_args()
         self.__data = ParserReadData()
         self.__set_prompts()
@@ -77,24 +117,37 @@ class Parser:
         self.__valid_data_json()
 
     def __valid_data_json(self) -> None:
+        """Validate the input JSON paths after loading arguments."""
         self.__valid_path(self.args.input)
         self.__valid_path(self.args.functions_definition)
 
     @staticmethod
     def __valid_path(path: Path) -> None:
+        """Ensure a path exists and is readable.
+
+        Args:
+            path: Path to validate.
+        """
         if not path.exists():
             raise Call_Error("[ERROR]: Path does not existe")
         if not os.access(path, os.R_OK):
             raise Call_Error("[ERROR]: File is not readable")
 
     def get_path_funcall_json(self) -> Any:
+        """Return the configured function-call output path.
+
+        Returns:
+            The output path supplied on the command line.
+        """
         print(type(self.args.output))
         return self.args.output
 
     def __set_args(self) -> None:
+        """Parse and store command-line arguments."""
         self.args = ParserArgs().run()
 
     def __set_functions_definition(self) -> None:
+        """Load and validate function definitions from the input file."""
         try:
             self.__function_definition = (
                 self.__data.get_functions_definition(
@@ -104,6 +157,7 @@ class Parser:
             raise Call_Error(str(e))
 
     def __set_prompts(self) -> None:
+        """Load and validate prompts from the input file."""
         try:
             self.__prompts = self.__data.get_prompts(self.args.input)
         except ValidationError as e:
@@ -111,8 +165,18 @@ class Parser:
 
     @property
     def get_prompts(self) -> list[Prompt]:
+        """Return the loaded prompts.
+
+        Returns:
+            Parsed prompt models.
+        """
         return self.__prompts
 
     @property
     def functions_def(self) -> list[FunctionDefn]:
+        """Return the loaded function definitions.
+
+        Returns:
+            Parsed function definition models.
+        """
         return self.__function_definition

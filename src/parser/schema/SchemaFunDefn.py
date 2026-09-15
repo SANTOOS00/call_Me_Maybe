@@ -6,11 +6,15 @@ ARG_TYPE: TypeAlias = int | float | bool | str
 
 
 class Type(BaseModel):
+    """Describe the JSON-compatible type of a function value."""
+
     model_config = ConfigDict(extra='forbid')
     type: SCHEMA_TYPES
 
 
 class FunctionDefn(BaseModel):
+    """Describe a callable function and its typed parameters."""
+
     model_config = ConfigDict(extra='forbid')
     name: str
     description: str
@@ -18,6 +22,11 @@ class FunctionDefn(BaseModel):
     returns: Type
 
     def __str__(self) -> str:
+        """Return a human-readable function prototype.
+
+        Returns:
+            Function name and parameter type signature.
+        """
         func_prototype: list[str] = list(f"{self.name}(")
         for idx, (arg_name, arg_type) in enumerate(self.parameters.items()):
             func_prototype.append(f"{arg_name}: {arg_type.type}")
@@ -31,6 +40,15 @@ class FunctionDefn(BaseModel):
             generated_arguments: dict[str, ARG_TYPE],
             current_arg: tuple[str, Type]
             ) -> str:
+        """Build a partial JSON object for parameter generation.
+
+        Args:
+            generated_arguments: Arguments already generated.
+            current_arg: Name and type of the argument being generated.
+
+        Returns:
+            Partial JSON-formatted argument text.
+        """
         format_arg: list[str] = list("{\n\t")
         prefix_suffex: str
         for arg_name, arg_value in generated_arguments.items():

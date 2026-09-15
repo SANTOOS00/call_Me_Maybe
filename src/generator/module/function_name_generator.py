@@ -9,11 +9,19 @@ import numpy
 
 
 class FunctionNameGenerator:
+    """Generate a function name constrained by available definitions."""
+
     def __init__(
         self,
         model: ManagerLLM,
         functions_definitions: list[FunctionDefn]
     ) -> None:
+        """Initialize constrained function-name generation.
+
+        Args:
+            model: Language model used for generation.
+            functions_definitions: Candidate function definitions.
+        """
         self.model: ManagerLLM = model
         self.trie: Trie = Trie()
         self.functions_definitions: list[FunctionDefn] = functions_definitions
@@ -23,8 +31,17 @@ class FunctionNameGenerator:
         self.set_functions_names_ids_to_trie()
 
     def generate(self, user_prompt: str) -> FunctionDefn | None:
-        def __check_fini_generator(tokens_str) -> bool:
-            token_id: list[int] = self.model.custom_encoder(tokens_str)             
+        """Generate the function definition matching a user prompt.
+
+        Args:
+            user_prompt: User request used to select a function.
+
+        Returns:
+            Matching function definition, or ``None`` if no match is found.
+        """
+        def __check_fini_generator(tokens_str: str) -> bool:
+            """Check whether generated text identifies a complete function."""
+            token_id: list[int] = self.model.custom_encoder(tokens_str)
             return self.trie.search(token_id)
         self.clean()
         global_prompt: str = self.__build_prompt(user_prompt)
@@ -43,23 +60,35 @@ class FunctionNameGenerator:
             self.generated_ids.append(next_token_id)
             self.function_name += next_token
             if __check_fini_generator(self.function_name):
-                self.function_name = self.function_name[:-1]
                 break
         return self.__get_function_definition()
 
     def __get_function_definition(self) -> FunctionDefn | None:
-        print(self.function_name)
+        """Find the definition matching the generated function name.
+
+        Returns:
+            Matching function definition, or ``None`` if absent.
+        """
         for fun in self.functions_definitions:
-            if fun.name == self.function_name:
+            if fun.name == self.function_name[:-1]:
                 return fun
         return None
 
     def clean(self) -> None:
+        """Reset generated token and function-name state."""
         self.context_window_ids = list()
         self.generated_ids = list()
         self.function_name: str = str()
 
     def __build_prompt(self, user_prompt: str) -> str:
+        """Build the model prompt containing available function definitions.
+
+        Args:
+            user_prompt: User request to include in the prompt.
+
+        Returns:
+            Function-selection prompt text.
+        """
         function_definitions = [
             function.model_dump() for function in self.functions_definitions
         ]
@@ -71,6 +100,7 @@ class FunctionNameGenerator:
         )
 
     def set_functions_names_ids_to_trie(self) -> None:
+        """Add tokenized function names to the prefix trie."""
         functions_names_ids: list[list[int]] = list()
         for fn_def in self.functions_definitions:
             name_ids: list[int] = self.model.custom_encoder(fn_def.name)

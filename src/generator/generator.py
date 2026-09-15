@@ -9,12 +9,21 @@ import sys
 
 
 class Generator:
+    """Generate function-call JSON from prompts and function definitions."""
+
     def __init__(
         self,
         prompts: list[Prompt],
         functions_definitions: list[FunctionDefn],
         model: ManagerLLM,
     ) -> None:
+        """Initialize the function-call generator.
+
+        Args:
+            prompts: User prompts to process.
+            functions_definitions: Available function definitions.
+            model: Language model used for generation.
+        """
 
         self.prompts: list[Prompt] = prompts
         self.model: ManagerLLM = model
@@ -26,6 +35,11 @@ class Generator:
         self.productjson: ProductJson = ProductJson()
 
     def run(self, path: Path) -> None:
+        """Generate and write function calls for every configured prompt.
+
+        Args:
+            path: Output file receiving the generated function calls.
+        """
         for user_prompt in self.prompts:
             function: FunctionDefn | None = self.generater_fun_name.generate(
                 user_prompt=user_prompt.prompt)

@@ -7,18 +7,24 @@ import sys
 
 
 class Main:
+    """Coordinate input parsing and function-call generation."""
+
     def __init__(self) -> None:
+        """Initialize the application coordinator."""
         self.data: Parser
 
     def run(self) -> None:
+        """Parse input data and generate the requested function calls."""
         self.parser()
         self.run_model()
 
     def parser(self) -> None:
+        """Create the parser and load the application's input data."""
         self.data = Parser()
         self.data.run()
 
     def run_model(self) -> None:
+        """Generate function calls from the parsed prompts and definitions."""
         model = ManagerLLM()
         generator = Generator(
             prompts=self.data.get_prompts,

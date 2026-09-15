@@ -3,7 +3,7 @@ from enum import Enum
 
 class PromptProduct(str, Enum):
     FUNCTION_NAME = """You are a precise function router.
-FUNCTION DEFINITIONS:
+FUNCTIONS DEFINITIONS:
 {FUNCTION_DEFINITIONS}
 
 USER PROMPT:
@@ -21,15 +21,12 @@ Example: {
       "b": 3.0,
     }
   }
-
 Example: {
-    "prompt": "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS",
-    "function_prototype": "fn_substitute_string_with_regex(source_string: string, regex: string, replacement: string),
-    "function_description": "Replace all occurrences matching a regex pattern in a string.",
+    "prompt": "Greet john",
+    "function_prototype": "fn_greet(name: string)",
+    "function_description": "Generate a greeting message for a person by name.",
     "parameters": {
-      "source_string": "Hello 34 I'm 233 years old",
-      "regex": "([0-9]+)",
-      "replacement": "NUMBERS"
+      "name": "john",
     }
   }
 Answer: {
