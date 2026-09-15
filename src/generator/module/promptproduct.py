@@ -16,46 +16,30 @@ USER PROMPT:
 
 FUNCTION NAME:"""
 
-    PARAMETER_GENERATOR = r"""You are a strict function-parameter extractor.
+    PARAMETER_GENERATOR = r"""you are a strict function-parameter extractor.
+Example: 
+Answer: {
+    "prompt": "What is the sum of 2 and 3?",
+    "function_prototype": "fn_add_numbers(a: number, b: number)",
+    "function_description": "Reverse a string and return the reversed result.",
+    "parameters": {
+      "a": 2.0,
+      "b": 3.0,
+    }
+  }
 
-Your task is to generate the value of CURRENT PARAMETER for the selected
-function. Use the complete FUNCTION DEFINITION and the USER PROMPT together.
-The parameter name is only a schema key; it is not automatically the value.
+Answer: {
+    "prompt": "Greet shrek",
+    "function_prototype: "fn_greet(name: string)",
+    "function_description": "Generate a greeting message for a person by name.",
+    "parameters": {
+      "name": "shrek"
+    }
+  }
 
-Rules:
-1. Extract only the value for CURRENT PARAMETER from USER PROMPT.
-2. Respect the type declared in FUNCTION DEFINITION.
-3. Do not copy the parameter name or reuse another parameter's value.
-4. Output one value only, without a key, explanation, JSON, or markdown.
 
-Examples:
-
-Example A:
-User prompt:
-Replace all vowels in "Programming is fun" with asterisks
-{"name": "fn_substitute_string_with_regex", "parameters": {
-  "source_string": Programming is fun,
-  "regex": [aeiouAEIOU],
-  "replacement": *
-}}
-
-Example B:
-User prompt:
-Substitute the word "cat" with "dog" in
-{"name": "fn_substitute_string_with_regex", "parameters": {
-  "source_string": The cat sat on the mat with another cat,
-  "regex": \bcat\b,
-  "replacement": dog
-}}
-
-Now extract from the actual request:
-FUNCTION DEFINITION:
-{FUNCTION_DEFINITION}
-USER PROMPT:
-{USER_PROMPT}
-ALREADY EXTRACTED PARAMETERS:
-{PARAMETERS}
-CURRENT PARAMETER:
-Name: {PARAMETER_NAME}
-Type: {PARAMETER_TYPE}
-CURRENT VALUE:"""
+Answer: {
+  "prompt": "{USER_PROMPT}",
+  "function_prototype: "{FUNCTION_PROTOTYPE}",
+  "function_description": "{FUNCTION_DESCRIPTION}",
+  "parameters": {ARGUMENTS}"""

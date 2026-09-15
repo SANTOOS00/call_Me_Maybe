@@ -22,17 +22,18 @@ class ManagerLLM(Small_LLM_Model):
         return self.decode([token_id])
 
     def mask_logits(
-        self, context_ids: list[int], hight_socres: list[int]
+        self, context_ids: list[int], hight_socres: list[int] | None = None
     ) -> list[float]:
         logits = self.get_logits_from_input_ids(context_ids)
+        if hight_socres is None:
+            return logits
         for token_id, _ in enumerate(logits):
             if token_id not in hight_socres:
                 logits[token_id] = float("-inf")
         return logits
     
-    @lru_cache(maxsize=6)
-    def encoder_chr_by_chr(self, prompt: str) -> list[int]:
+    def encoder_chr_by_chr(self, prompt: list[str]) -> list[int]:
         token_ids: list[int] = []
         for character in prompt:
-            token_ids.extend(self.custom_encoder(character))
+            token_ids.append(self.custom_encoder(character)[0])
         return token_ids

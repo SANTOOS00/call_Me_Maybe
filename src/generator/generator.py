@@ -24,9 +24,6 @@ class Generator:
             model=self.model,
             functions_definitions=functions_definitions
         )
-        self.generater_parameters: ParameterGenerator = ParameterGenerator(
-            model=model
-        )
         self.productjson: ProductJson = ProductJson()
 
     def run(self, path: Path) -> None:
@@ -36,13 +33,14 @@ class Generator:
             if function is None:
                 print("is not function definition")
                 sys.exit(1)
-            parameters: Dict[str, int | str | bool | float] = self.generater_parameters.generate(function_definition=function,
-                                                                                                 prompt=user_prompt.prompt)
-            # self.__valid_parameters(parameters)
+            generater_parameters: ParameterGenerator = ParameterGenerator(
+                model=self.model, function_definition=function, prompt=user_prompt.prompt
+            )
+            generater_parameters.generate()
             function_calling: FormatFunctionCalling = FormatFunctionCalling(
                 name=function.name,
                 prompt=user_prompt.prompt,
-                parameters=parameters
+                parameters=generater_parameters.valid_parameters
             )
             self.productjson.add_function(function_calling)
             self.productjson.write_in_file(path)

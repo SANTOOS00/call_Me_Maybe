@@ -12,9 +12,10 @@ PATH_MYPY = $(UV) run mypy
 
 OUTPUT_DEF = data/output/function_calls.json
 
-INPUT_DEF = data/input/function_calling_tests.json
+INPUT_DEF = ./moulinette/successfully/input/function_calling_tests.json
 
-FUNCTIONS_DEFINITION_DEF = data/input/functions_definition.json
+FUNCTIONS_DEFINITION_DEF = ./moulinette/successfully/input/functions_definition.json
+
 
 install:
 	@$(UV) sync --all-packages

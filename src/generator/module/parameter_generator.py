@@ -1,6 +1,6 @@
 import json
 from enum import Enum, auto
-from typing import Dict
+from typing import Dict, Literal
 
 import numpy
 
@@ -19,108 +19,101 @@ class NumberFSM(Enum):
     DECIMAL = auto()
     END = auto()
 
+class StringFSM(Enum):
+    START = auto()
+    CONTENT = auto()
+    ESCAPE = auto()
+    END = auto()
 
 class ParameterGenerator:
 
-    def __init__(self, model: ManagerLLM) -> None:
+    def __init__(self, model: ManagerLLM, function_definition: FunctionDefn, prompt: str) -> None:
         self.model = model
         self.valid_parameters: Dict[str, ParameterValue] = {}
         self.context_window_ids: list[int] = []
+        self.function_definition: FunctionDefn = function_definition
+        self.prompt: str = prompt
 
     def generate(
-        self, function_definition: FunctionDefn, prompt: str
-    ) -> Dict[str, ParameterValue]:
-        self.valid_parameters = {}
+        self
+    ) -> None:
 
-        for name, parameter_type in function_definition.parameters.items():
+        for name, parameter_type in self.function_definition.parameters.items():
             parameter_prompt = self.builder_prompt(
-                user_prompt=prompt,
-                function_definition=function_definition,
-                parameter_name=name,
-                parameter_type=parameter_type.type,
+                user_prompt=self.prompt,
+                function_definition=self.function_definition,
+                arg_name=name,
+                arg_value=parameter_type.type,
             )
-            print(parameter_prompt)
+            print(parameter_prompt, end="", flush=True)
             self.context_window_ids = self.model.custom_encoder(parameter_prompt)
 
             match parameter_type.type:
                 case "string":
-                    value = self.__generate_string(len(prompt))
+                    value = self.__generate_string(len(self.prompt))
                 case "number":
-                    value = self.__generate_number(len(prompt))
+                    value = float(self.__generate_number())
                 case "integer":
-                    value = int(self.__generate_number(len(prompt)))
+                    value = int(self.__generate_number())
                 case "boolean":
-                    value = self.__generate_boolean(len(prompt))
+                    value = self.__generate_boolean(len(self.prompt))
                 case _:
                     pass
             self.valid_parameters[name] = value
-        return self.valid_parameters
 
-    def __generate_string(self, max_tokens: int) -> str:
-        generated = self.__generate_text(max_tokens)
-        generated = generated.splitlines()[0].strip() if generated else ""
-        generated = generated.split(",", maxsplit=1)[0].strip()
-        generated = generated.rstrip("},")
-        if len(generated) >= 2 and generated[0] == generated[-1] in {'"', "'"}:
-            generated = generated[1:-1]
-        return generated.strip()
+    def __generate_string(self, prompt_len: int) -> str:
+        current_state: StringFSM
+        generated_value:  str = str()
+        while True:
+            logits: list[float] = self.model.mask_logits(self.context_window_ids)
+            token_id: int = int(numpy.argmax(logits))
+            token: str = self.model.decode_token(token_id)
+            generated_value += token
+            current_state = self.__get_string_fsm_state(generated_value, prompt_len)
+            self.context_window_ids.append(token_id)
+            if  current_state == StringFSM.END:
+                if '"' in generated_value:
+                    idx_quotes: int = generated_value.index('"')
+                    generated_value = generated_value[:idx_quotes]
+                break
+            print(token, end="", flush=True)
+        return generated_value
 
     def __generate_boolean(self, max_token) -> bool:
-        generated = self.__generate_text(max_token)
-        candidates = generated.strip().lower().split(",", maxsplit=1)[0].split()
-        if not candidates:
-            raise ValueError("Model generated an empty boolean value")
-        value = candidates[0]
-        if value not in {"true", "false"}:
-            raise ValueError(f"Model generated an invalid boolean value: {generated}")
-        return value == "true"
+        return True
 
-    def __generate_text(self, max_tokens: int) -> str:
-        generated: str = ""
-        for _ in range(max_tokens):
-            logits = self.model.get_logits(self.context_window_ids)
-            token_id = int(numpy.argmax(logits))
-            token = self.model.decode_token(token_id)
-            self.context_window_ids.append(token_id)
-            if not token:
-                break
-            generated += token
-            if any(character in token for character in ("\n", "\r")):
-                break
-        return generated
 
-    def __generate_number(self, max_token: int) -> float:
+    def __generate_number(self) -> float:
         generated: str = ""
-        for _ in range(max_token):
-            token_possible: list[int] | None = self.__possible_number_tokens(generated)
-            if token_possible is None:
-                break
+        while True:
+            token_possible: list[int] = self.__possible_number_tokens(generated)
             logits: list[float] = self.model.mask_logits(self.context_window_ids, token_possible)
             token_id = int(numpy.argmax(logits))
             token = self.model.decode_token(token_id)
             self.context_window_ids.append(token_id)
             generated += token
-            print(generated)
-            step = self._number_state(token)
-            if step == NumberFSM.END:
-                if "," in token:
-                    index = token.index(",")
-                    token = token[:index]
+            current_state: NumberFSM = self._number_state(generated)
+            if current_state == NumberFSM.END:
+                if "," in generated:
+                    index = generated.rindex(",")
+                    generated = generated[:index]
                 break
+            print(token, end="", flush=True)
         return float(generated)
 
-    def __possible_number_tokens(self, number: str) -> list[int] | None:
+    def __possible_number_tokens(self, number: str) -> list[int]:
+        characters: list[str]
         state = self._number_state(number)
         if state == NumberFSM.START:
-            characters = "-+0123456789"
+            characters = list("-+0123456789")
         elif state == NumberFSM.SIGN:
-            characters = "0123456789"
+            characters = list("0123456789")
         elif state == NumberFSM.INTEGER:    
-            characters = "0123456789.,"
+            characters = list("0123456789.,")
         elif state == NumberFSM.DECIMAL:
-            characters = "0123456789,"
+            characters = list("0123456789,")
         else:
-            return None
+            characters = list(",")
         return self.model.encoder_chr_by_chr(characters)
 
     def _number_state(self, number: str) -> NumberFSM:
@@ -137,37 +130,57 @@ class ParameterGenerator:
                 case NumberFSM.SIGN:
                     step_generator = NumberFSM.INTEGER
                 case NumberFSM.INTEGER:
-                    if nu == '.' and cont_number != 0:
+                    if nu == '.':
                         step_generator = NumberFSM.DECIMAL
                     elif nu == ',' or cont_number > 5:
-                        return NumberFSM.END
+                        step_generator = NumberFSM.END
                     else:
                         cont_number += 1
                 case NumberFSM.DECIMAL:
                     if (nu == ',' and cont_decmal) or cont_decmal > 5:
-                        return NumberFSM.END
+                        step_generator = NumberFSM.END
                     cont_decmal += 1
                 case NumberFSM.END:
                     return step_generator
         return step_generator
 
+    def __get_string_fsm_state(self, string: str, max_len: int) -> StringFSM:
+        current_state: StringFSM = StringFSM.START
+        for ch in string:
+            match current_state:
+                case StringFSM.START:
+                    if ch == '\\':
+                        current_state = StringFSM.ESCAPE
+                    elif ch == '"':
+                        current_state = StringFSM.END
+                    else:
+                        current_state = StringFSM.CONTENT
+                case StringFSM.CONTENT:
+                    if ch == '\\':
+                        current_state = StringFSM.ESCAPE
+                    elif len(string) >= max_len:
+                        current_state = current_state.END
+                    elif  ch == '"':
+                        current_state = StringFSM.END
+                case StringFSM.ESCAPE:
+                    current_state = StringFSM.CONTENT
+                case StringFSM.END:
+                    ...
+        return current_state
+
     def builder_prompt(
             self,
             user_prompt: str,
             function_definition: FunctionDefn,
-            parameter_name: str,
-            parameter_type: str,
+        
+            arg_name: str,
+            arg_value: Literal["number", "string", "boolean", "integer"],
         ) -> str:
         return (
             PromptProduct.PARAMETER_GENERATOR
             .replace("{USER_PROMPT}", user_prompt)
             .replace("{FUNCTION_NAME}", function_definition.name)
             .replace("{FUNCTION_DESCRIPTION}", function_definition.description)
-            .replace(
-                "{FUNCTION_DEFINITION}",
-                json.dumps(function_definition.model_dump(), indent=2),
-            )
-            .replace("{PARAMETERS}", repr(self.valid_parameters))
-            .replace("{PARAMETER_NAME}", parameter_name)
-            .replace("{PARAMETER_TYPE}", parameter_type)
+            .replace("{FUNCTION_PROTOTYPE}", str(function_definition))
+            .replace("{ARGUMENTS}", function_definition.get_pre_generated_argument_format(self.valid_parameters, (arg_name, arg_value)))
         )

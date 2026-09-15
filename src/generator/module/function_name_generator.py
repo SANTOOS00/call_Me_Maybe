@@ -3,7 +3,7 @@ from ...parser import FunctionDefn
 from ...trie import Trie
 import json
 from .promptproduct import PromptProduct
-import numpy # type: ignore[import-untyped, unused-ignore]
+import numpy # type: ignore[import-untyped, unused-ignore
 
 
 class FunctionNameGenerator:
