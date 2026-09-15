@@ -4,10 +4,6 @@ from enum import Enum
 class PromptProduct(str, Enum):
     FUNCTION_NAME = """You are a precise function router.
 
-Task:
-Analyze the USER PROMPT and select the single most appropriate function from
-the FUNCTION DEFINITIONS. Return only one exact function name.
-
 FUNCTION DEFINITIONS:
 {FUNCTION_DEFINITIONS}
 

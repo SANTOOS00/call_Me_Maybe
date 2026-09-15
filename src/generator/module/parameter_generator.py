@@ -80,6 +80,13 @@ class ParameterGenerator:
         return generated_value
 
     def __generate_boolean(self, max_token) -> bool:
+        model = self.model
+        generated: str
+        possible_tokens = model.encoder_chr_by_chr(["true", "false"])
+        logit: list[float] = model.mask_logits(self.context_window_ids,
+                                                    possible_tokens)
+        token: int = int(numpy.argmax(logit))
+        generated = 
         return True
 
 
