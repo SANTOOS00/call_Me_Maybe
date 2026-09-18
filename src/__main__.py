@@ -1,44 +1,35 @@
-from .parser import Parser
-from .llm_manager import ManagerLLM
-from .custom_error import Call_Error
-from .generator import Generator
-
+from .llm_interaction_handler import LLMInteractionHandler
+from .prompt import Prompt
+from .function_definition import FunctionDefinitionModel
+from .parsing import Parsing
+from .model import Model
+from pydantic import ValidationError
 import sys
 
 
-class Main:
-    """Coordinate input parsing and function-call generation."""
+def main() -> None:
+    """Main entry point for CALL_ME_MAYBE_42 function calling system."""
+    # try:
+    parser: Parsing = Parsing(sys.argv)
+    model: Model = Model()
+    functions_definition: dict[str, FunctionDefinitionModel] = (
+        parser.create_function_def()
+    )
+    prompts: list[Prompt] = parser.create_prompt()
+    llm_interaction: LLMInteractionHandler = LLMInteractionHandler(
+        functions_definition, prompts, model
+    )
+    llm_interaction.generate_output()
+    """
 
-    def __init__(self) -> None:
-        """Initialize the application coordinator."""
-        self.data: Parser
-
-    def run(self) -> None:
-        """Parse input data and generate the requested function calls."""
-        self.parser()
-        # self.run_model()
-
-    def parser(self) -> None:
-        """Create the parser and load the application's input data."""
-        self.data = Parser()
-        self.data.run()
-
-    def run_model(self) -> None:
-        """Generate function calls from the parsed prompts and definitions."""
-        model = ManagerLLM()
-        generator = Generator(
-            prompts=self.data.get_prompts,
-            model=model,
-            functions_definitions=self.data.functions_def,
-        )
-        generator.run(path=self.data.get_path_funcall_json())
+    except ValidationError as e:
+        f"{e.errors()[0]['msg']}"
+    except ValueError as e:
+        print(e)
+    except (FileNotFoundError, PermissionError) as e:
+        print(e)
+    """
 
 
 if __name__ == "__main__":
-    try:
-        call_me_maybe = Main()
-        call_me_maybe.run()
-    except Call_Error as error:
-        print("++ erorr ++")
-        print(error, file=sys.stderr)
-        sys.exit(1)
+    main()

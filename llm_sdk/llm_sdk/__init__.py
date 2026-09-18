@@ -67,7 +67,7 @@ class Small_LLM_Model:
             trust_remote_code=trust_remote_code,
         )
         self._model.to(self._device)
-        self._model.eval()  
+        self._model.eval()
 
         # switch to inference-only mode
         for p in self._model.parameters():

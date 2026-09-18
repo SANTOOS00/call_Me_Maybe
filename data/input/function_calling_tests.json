@@ -1,8 +1,20 @@
 [
   {
-    "prompt": "sssss"
+    "prompt": "What is the sum of 3, 6, and 9?"
   },
   {
-    "prompt": "sssss"
+    "prompt": "Add 10, 20, and 30 together."
+  },
+  {
+    "prompt": "What do you get if you add 4, 15, and 21?"
+  },
+  {
+    "prompt": "Calculate the total of 50, 25, and 5."
+  },
+  {
+    "prompt": "Add 2.5 and 7.5."
+  },
+  {
+    "prompt": "What is the sum of 1.5, 2.5, and 6?"
   }
 ]

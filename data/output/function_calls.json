@@ -1,10 +1,1 @@
-[
-  {
-    "prompt": "what is the sum of issam and 2 ",
-    "name": "fn_add_numbers",
-    "parameters": {
-      "a": 2.0,
-      "b": 2
-    }
-  }
-]
+"[{\"prompt\":\"What is the sum of 3, 6, and 9?\",\"function\":\"fn_add_numbers\",\"arguments\":{\"a\":3.0,\"b\":6.0}},{\"prompt\":\"Add 10, 20, and 30 together.\",\"function\":\"fn_add_numbers\",\"arguments\":{\"a\":10.0,\"b\":20.0}},{\"prompt\":\"What do you get if you add 4, 15, and 21?\",\"function\":\"fn_add_numbers\",\"arguments\":{\"a\":4.0,\"b\":15.0}},{\"prompt\":\"Calculate the total of 50, 25, and 5.\",\"function\":\"fn_add_numbers\",\"arguments\":{\"a\":50.0,\"b\":25.0}},{\"prompt\":\"Add 2.5 and 7.5.\",\"function\":\"fn_add_numbers\",\"arguments\":{\"a\":2.5,\"b\":7.5}},{\"prompt\":\"What is the sum of 1.5, 2.5, and 6?\",\"function\":\"fn_add_numbers\",\"arguments\":{\"a\":1.5,\"b\":2.5}}]"
