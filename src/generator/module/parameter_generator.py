@@ -59,7 +59,6 @@ class ParameterGenerator:
                 arg_name=name,
                 arg_value=argtype,
             )
-            print(parameter_prompt, end="", flush=True)
             value: str | int | bool | float
             self.context_window_ids = self.model.custom_encoder(
                 parameter_prompt)
@@ -101,9 +100,6 @@ class ParameterGenerator:
                     idx_quotes: int = generated_value.index('"')
                     generated_value = generated_value[:idx_quotes]
                 break
-            print(generated_value)
-
-            # print(token, end="", flush=True)
         return generated_value
 
     def __generate_boolean(self) -> bool:
@@ -142,7 +138,6 @@ class ParameterGenerator:
                     index = generated.rindex(",")
                     generated = generated[:index]
                 break
-            print(token, end="", flush=True)
         return float(generated)
 
     def __possible_number_tokens(self, number: str) -> list[int]:

@@ -16,7 +16,7 @@ dependencies = [
 llm-sdk = { workspace = true }
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.11"
 mypy_path = "llm_sdk"
 
 [tool.uv.workspace]

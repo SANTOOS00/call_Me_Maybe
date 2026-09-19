@@ -1,17 +1,5 @@
 [
   {
-    "name": "fn_add",
-    "description": "enerate a greeting message for a person by name.",
-    "parameters": {
-      "a": {
-        "type": "number"
-      }
-    },
-    "returns": {
-      "type": "number"
-    }
-  },
-  {
     "name": "fn_add_numbers",
     "description": "Add two numbers together and return their sum.",
     "parameters": {

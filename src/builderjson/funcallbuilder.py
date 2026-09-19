@@ -14,15 +14,13 @@ class FormatFunctionCalling(BaseModel):
 class ProductJson:
     """Collect and serialize generated function calls."""
 
-    def __init__(self,
-                 functions_calling: list[FormatFunctionCalling] | None = None
-                 ) -> None:
+    def __init__(self) -> None:
         """Initialize the function-call collection.
-
         Args:
             functions_calling: Existing calls to include, if any.
         """
-        self.functions_calling = functions_calling or []
+
+        self.functions_calling: list[FormatFunctionCalling] = []
         self.type_adapter = TypeAdapter(list[FormatFunctionCalling])
 
     def add_function(self, func: FormatFunctionCalling) -> None:

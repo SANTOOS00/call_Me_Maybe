@@ -8,7 +8,6 @@ class Node:
     def __init__(self, value: int | None = None) -> None:
         """Initialize a trie node."""
         self.children: dict[int, Node] = dict()
-        self.value: int | None = value
         self.isLeaf: bool = False
 
 

@@ -24,7 +24,8 @@ Example: {
 Example: {
     "prompt": "Greet john",
     "function_prototype": "fn_greet(name: string)",
-    "function_description": "Generate a greeting message for a person by name.",
+    "function_description": "Generate a greeting message for a\
+        person by name.",
     "parameters": {
       "name": "john",
     }

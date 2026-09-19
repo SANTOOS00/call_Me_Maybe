@@ -1,28 +1,28 @@
-from typing import Dict
-
-
 class Call_Error(Exception):
-    """Represent an application-level input or generation error."""
+    """Attributes:
+        message: The human-readable error description.
+        string: The formatted error message.
+    """
 
-    string = ""
+    string: str = ""
 
-    def __init__(self, message: str, **context: str) -> None:
-        """Initialize an error with a message and optional context.
+    def __init__(self, message: str) -> None:
+        """Initialize a Call_Error exception.
 
         Args:
-            message: Human-readable error description.
-            **context: Additional context values for the error message.
+            message: Human-readable description of the error.
         """
-        super().__init__(self.format_message(message, context))
+        self.message = message
+        self.string = self.format_message(message)
+        super().__init__(self.string)
 
-    def format_message(self, message: str, context: Dict[str, str]) -> str:
-        """Format an error message with contextual values.
+    def format_message(self, message: str) -> str:
+        """Format an error message.
 
         Args:
-            message: Human-readable error description.
-            context: Additional context values.
+            message: Human-readable description of the error.
 
         Returns:
-            Formatted error text.
+            The formatted error message.
         """
-        return f"{message} {context}"
+        return f"[Call_Error] {message}"

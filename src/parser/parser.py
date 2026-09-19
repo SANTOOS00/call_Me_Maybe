@@ -65,8 +65,7 @@ class ParserArgs:
             )
         if not args.input.exists() or not args.input.exists():
             raise Call_Error(f"Input file not found: {args.input}")
-        if not args.output.exists() or not args.output.exists():
-            raise Call_Error(f"output file not found: {args.output}")
+        os.makedirs(os.path.dirname(args.output), exist_ok=True)
 
 
 class ParserReadData:
@@ -82,7 +81,7 @@ class ParserReadData:
             Validated prompt models.
         """
         try:
-            with open(path, "r") as fd:
+            with path.open() as fd:
                 prompts = json.load(fd, object_pairs_hook=self.valid_json)
             if not isinstance(prompts, list):
                 raise TypeError(
@@ -94,7 +93,8 @@ class ParserReadData:
             sys.exit(1)
         except ValidationError as e:
             print("Error: Data validation failed for Prompt"
-                  f" schema in '{path}':\n{e}", file=sys.stderr)
+                  f" schema in '{path}':\n{e.errors()[0].get('msg', '')}",
+                  file=sys.stderr)
             sys.exit(1)
         except TypeError as e:
             print("Error: Data structure mismatch while "
@@ -116,7 +116,8 @@ class ParserReadData:
         """
         try:
             with open(path, "r") as fd:
-                function_defn: Any = json.load(fd, object_pairs_hook=self.valid_json)
+                function_defn: Any = json.load(
+                    fd, object_pairs_hook=self.valid_json)
             return [FunctionDefn(**fun) for fun in function_defn]
         except json.JSONDecodeError as e:
             print("Error: Invalid JSON syntax in file"
@@ -124,7 +125,8 @@ class ParserReadData:
             sys.exit(1)
         except ValidationError as e:
             print("Error: Data validation failed for Prompt "
-                  f"schema in '{path}':\n{e}", file=sys.stderr)
+                  f"schema in '{path}':\n{e.errors()[0].get('msg', '')}",
+                  file=sys.stderr)
             sys.exit(1)
         except TypeError as e:
             print("Error: Data structure mismatch while "
@@ -156,7 +158,8 @@ class ParserReadData:
         validated_data: dict[str, Any] = {}
         for key, val in data_json:
             if key in seen_keys:
-                raise ValueError(f"Duplicate key '{key}' detected in JSON object.")
+                raise ValueError(
+                    f"Duplicate key '{key}' detected in JSON object.")
             seen_keys.add(key)
             validated_data[key] = val
         return validated_data

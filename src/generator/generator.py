@@ -44,7 +44,7 @@ class Generator:
             function: FunctionDefn | None = self.generater_fun_name.generate(
                 user_prompt=user_prompt.prompt)
             if function is None:
-                print("is not function definition")
+                print("is not function definition", file=sys.stderr)
                 sys.exit(1)
             generater_parameters: ParameterGenerator = ParameterGenerator(
                 model=self.model,

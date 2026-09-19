@@ -78,7 +78,7 @@ class FunctionNameGenerator:
         """Reset generated token and function-name state."""
         self.context_window_ids = list()
         self.generated_ids = list()
-        self.function_name: str = str()
+        self.function_name = str()
 
     def __build_prompt(self, user_prompt: str) -> str:
         """Build the model prompt containing available function definitions.

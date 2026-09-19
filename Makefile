@@ -1,6 +1,11 @@
+
 UV = uv
 
 PYTHON := $(UV) run python
+
+export UV_CACHE_DIR=.cache
+
+export HF_HOME_CACHE=.cache
 
 PROJECT := src
 
@@ -24,6 +29,9 @@ run: install
 	$(PYTHON) -m $(PROJECT) --functions_definition \
 	$(FUNCTIONS_DEFINITION_DEF) --output $(OUTPUT_DEF) \
 	--input $(INPUT_DEF)
+
+clean_cache:
+	$(UV) clean
 
 clean:
 	rm -rf .venv *.egg-info
