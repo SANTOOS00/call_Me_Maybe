@@ -1,4 +1,0 @@
-flake8>=4.4.4
-mypy>=2.3.1
-transformers>=4.4.4
-torch>=2.13.0
